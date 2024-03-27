@@ -1,0 +1,75 @@
+#root, #root > div {
+  display: flex;
+  flex-grow: 1;
+}
+
+.router-container {
+  position: sticky;
+  background-color: #242424;
+  width: 100vw;
+  left: 0;
+  z-index: 999;
+}
+
+.router > nav > ul {
+  padding-inline-start: 0;
+}
+
+.router > nav > ul > li {
+  list-style: none;
+}
+
+.router-container, .router {
+  flex-grow: 1;
+  top: 0;
+}
+
+#root, #root > div, .router-container, .router,.router > nav > ul {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.router-container, .router,.router > nav > ul, .router > nav > ul > li {
+  display: flex;
+  text-align: center;
+}
+
+.page-content-c {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  text-align: center;
+  width: calc(100vw - 4rem);
+}
+
+.page-outter-c {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: calc(100vw - 4rem);
+  justify-content: center;
+  align-items: center;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-bottom: 2rem;
+}
+
+.page-title-c {
+  display: flex;
+  position: relative;
+  flex-grow: 1;
+  width: calc(100vw - 4rem);
+  justify-content: center;
+  align-items: center;
+}
+
+.table-wrapper {
+  display: flex;
+  overflow: auto;
+  max-height: 30rem;
+}
+
+.table-wrapper > table > tbody > tr > td,.table-wrapper > table > thead > tr > th {
+  white-space: nowrap;
+}

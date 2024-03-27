@@ -1,0 +1,12 @@
+{
+  "name": "@ronda-penal/eslint-config-node",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "license": "MIT-0",
+  "type": "commonjs",
+  "devDependencies": {
+    "eslint": "^8.38.0",
+    "eslint-plugin-node": "^11.1.0"
+  }
+}

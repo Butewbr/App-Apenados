@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist"
+  },
+  "include": [
+    "./src/**/*",
+    "./__tests__/**/*",
+    "./cors-config.json",
+    "./db-conn.json",
+    "./express.config.json"
+  ]
+}

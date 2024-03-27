@@ -1,0 +1,34 @@
+{
+  "name": "@ronda-penal/web-admin",
+  "version": "0.0.1",
+  "proxy": "http://localhost:3000/",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint \"{src,__tests__}/**/*.{js,jsx,ts,tsx}\" --ext js,jsx,ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "test": "jest"
+  },
+  "license": "MIT-0",
+  "dependencies": {
+    "@ronda-penal/axios-config": "*",
+    "jest-environment-jsdom": "^29.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.10.0"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "^7.18.6",
+    "@ronda-penal/eslint-config-react": "*",
+    "@testing-library/dom": "^9.3.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.4.3",
+    "@types/react": "^18.2.6",
+    "@types/react-dom": "^18.2.4",
+    "@vitejs/plugin-react": "^4.0.0",
+    "identity-obj-proxy": "^3.0.0",
+    "vite": "^4.3.0"
+  }
+}

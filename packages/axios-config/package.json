@@ -1,0 +1,10 @@
+{
+  "name": "@ronda-penal/axios-config",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "private": true,
+  "license": "MIT-0",
+  "devDependencies": {
+    "axios": "^1.4.0"
+  }
+}
