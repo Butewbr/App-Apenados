@@ -1,0 +1,12 @@
+version: "3.8"  # Specify the docker-compose version
+
+services:
+  apenados:  # Name of your service
+    build: .  # Build the image from the current directory (.)
+    ports:
+      - "5000:5000"  # Map container port 5000 to host port 5000
+    volumes:
+      - type: bind
+        source: ../server/app
+        target: /app
+
