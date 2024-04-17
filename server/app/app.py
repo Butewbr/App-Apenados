@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 users = {
     "a": "123",
     "b": "123",
+    "c": "123",
 }
 
 @app.route('/')

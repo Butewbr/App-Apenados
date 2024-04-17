@@ -15,6 +15,10 @@ cd server
 # fi
 
 # Run the container in detached mode
+echo "Building the container..."
+docker compose build
+
+# Run the container in detached mode
 echo "Running the container..."
 docker compose up
 

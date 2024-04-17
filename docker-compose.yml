@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  apenados:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - type: bind
+        source: ./server/app
+        target: /app
+
