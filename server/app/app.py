@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from flask_bcrypt import generate_password_hash, check_password_hash
 import logging
 
 app = Flask(__name__)
@@ -28,11 +29,11 @@ apenados = {
 
 # Dummy user data
 users = {
-    'user1': {'password': '123'},
-    'user2': {'password': '123'},
-    'user3': {'password': '123'},
-    'user4': {'password': '123'},
-    'user5': {'password': '123'}
+    'user1': {'password_hash': generate_password_hash('123')},
+    'user2': {'password_hash': generate_password_hash('123')},
+    'user3': {'password_hash': generate_password_hash('123')},
+    'user4': {'password_hash': generate_password_hash('123')},
+    'user5': {'password_hash': generate_password_hash('123')}
 }
 
 login_manager = LoginManager()
@@ -58,7 +59,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username in users and users[username]['password'] == password:
+        if username in users and check_password_hash(users[username]['password_hash'], password):
             user = User()
             user.id = username
             login_user(user)
@@ -70,6 +71,21 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        # Check if the username is already taken
+        if username not in users:
+            hashed_password = generate_password_hash(password).decode('utf-8')
+            users[username] = {'password_hash': hashed_password}
+            user = User()
+            user.id = username
+            login_user(user)
+            return redirect(url_for('display_data'))
+    return render_template('register.html')
 
 @app.route('/gerenciamento')
 @login_required

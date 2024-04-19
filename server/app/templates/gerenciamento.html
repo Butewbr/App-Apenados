@@ -70,10 +70,9 @@
             let editButton{{ name| replace(" ", "") }} = document.querySelector('#{{ name|replace(" ", "") }}Modal .editButton');
             let editForm{{ name| replace(" ", "") }} = document.querySelector('#{{ name|replace(" ", "") }}Modal .editForm');
     
-    editButton{ { name | replace(" ", "") } }.addEventListener('click', function ()
-            {
+            editButton{{ name | replace(" ", "") }}.addEventListener('click', function () {
                 console.log("JUST CLICKED IN THE {{name|replace(" ", "")}} EDIT BUTTON!!");
-        editForm{ { name | replace(" ", "") } }.style.display = 'block';
+                editForm{{name|replace(" ", "")}}.style.display = 'block';
             });
         </script>
         {% endfor %}
@@ -117,7 +116,6 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-        // Wait for the document to fully load before adding event listener
         document.addEventListener('DOMContentLoaded', function ()
         {
             document.getElementById('searchInput').addEventListener('input', function ()

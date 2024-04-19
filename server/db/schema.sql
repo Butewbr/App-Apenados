@@ -1,0 +1,27 @@
+CREATE TABLE Pessoa (
+    CPF VARCHAR(11) PRIMARY KEY,
+    Nome VARCHAR(100)
+);
+
+CREATE TABLE Policial (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    CPF_pessoa VARCHAR(11) UNIQUE,
+    Senha VARCHAR(100),
+    Telefone VARCHAR(20),
+    FOREIGN KEY (CPF_pessoa) REFERENCES Pessoa(CPF)
+);
+
+CREATE TABLE Apenado (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    CPF_pessoa VARCHAR(11) UNIQUE,
+    Endereco VARCHAR(255),
+    Relevancia INT,
+    Data_fim_liberdade DATE,
+    FOREIGN KEY (CPF_pessoa) REFERENCES Pessoa(CPF)
+);
+
+CREATE TABLE Crime (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    Data DATE,
+    Descricao VARCHAR(255)
+);
