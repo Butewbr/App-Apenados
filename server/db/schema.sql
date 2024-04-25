@@ -5,20 +5,10 @@ CREATE TABLE Pessoa (
 
 CREATE TABLE Policial (
     matricula VARCHAR(50) PRIMARY KEY,
-    CPF_pessoa VARCHAR(11) UNIQUE,
-    senha VARCHAR(100) NOT NULL,
+    cpf VARCHAR(11) UNIQUE,
+    password_hash VARCHAR(100) NOT NULL,
     telefone VARCHAR(20),
-    FOREIGN KEY (CPF_pessoa) REFERENCES Pessoa(cpf)
-);
-
-CREATE TABLE Apenado (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    CPF_pessoa VARCHAR(11) UNIQUE,
-    id_endereco INT REFERENCES Endereco(id),
-    id_crime INT REFERENCES Crime(id),
-    Relevancia INT,
-    Data_fim_liberdade DATE,
-    FOREIGN KEY (CPF_pessoa) REFERENCES Pessoa(cpf)
+    FOREIGN KEY (cpf) REFERENCES Pessoa(cpf)
 );
 
 CREATE TABLE Endereco (
@@ -31,16 +21,26 @@ CREATE TABLE Endereco (
     municipio VARCHAR(250)
 );
 
+CREATE TABLE ArtigoPenal (
+    id SERIAL PRIMARY KEY,
+    descricao VARCHAR(1000) NOT NULL
+);
+
 CREATE TABLE Crime (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     data_ocorrido DATE,
     descricao VARCHAR(1000),
     id_artigo_penal INT REFERENCES ArtigoPenal(id)
 );
 
-CREATE TABLE ArtigoPenal (
+CREATE TABLE Apenado (
     id SERIAL PRIMARY KEY,
-    descricao VARCHAR(1000) NOT NULL
+    cpf VARCHAR(11) UNIQUE,
+    id_endereco INT REFERENCES Endereco(id),
+    id_crime INT REFERENCES Crime(id),
+    Relevancia INT,
+    Data_fim_liberdade DATE,
+    FOREIGN KEY (cpf) REFERENCES Pessoa(cpf)
 );
 
 CREATE TABLE Visita (

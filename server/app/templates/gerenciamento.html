@@ -29,10 +29,10 @@
 		</button>
 
 		<ul id="apenadosList">
-			{% for a, apenado in apenados.items() %}
+			{% for apenado in apenados %}
 			<li>
 				<a href="#" data-toggle="modal" data-target="#modal{{ apenado['id'] }}"
-					>{{ apenado['name'] }}</a
+					>{{ apenado['nome'] }}</a
 				>
 				<!-- Modal -->
 				<div
@@ -47,7 +47,7 @@
 						<div class="modal-content">
 							<div class="modal-header">
 								<h5 class="modal-title" id="{{ apenado['id'] }}ModalLabel">
-									{{ apenado['name'] }}
+									{{ apenado['nome'] }}
 								</h5>
 								<button
 									type="button"
@@ -91,22 +91,22 @@
 								</div>
 								<!-- Inside the modal-body -->
 								<p>
-									<strong>Nome:</strong> {{ apenado['name'] }}
+									<strong>Nome:</strong> {{ apenado['nome'] }}
 								</p>
 								<p>
 									<strong>CPF:</strong> {{ apenado['cpf'] }}
 								</p>
 								<p>
 									<strong>Endereço:</strong> {{
-									apenado['address'] }}
+									apenado['endereco'] }}
 								</p>
 								<p>
 									<strong>Descrição:</strong> {{
-									apenado['description'] }}
+									apenado['descricao'] }}
 								</p>
 								<p>
 									<strong>Nível de Perigo:</strong> {{
-									apenado['danger_level'] }}
+									apenado['relevancia'] }}
 								</p>
 								<form
 									method="POST"
@@ -132,8 +132,8 @@
 											type="text"
 											class="form-control"
 											id="fullNameInput"
-											name="name"
-											value="{{ apenado['name'] }}"
+											name="nome"
+											value="{{ apenado['nome'] }}"
 											readonly
 										/>
 									</div>
@@ -156,8 +156,8 @@
 											type="text"
 											class="form-control"
 											id="addressInput"
-											name="address"
-											value="{{ apenado['address'] }}"
+											name="endereco"
+											value="{{ apenado['endereco'] }}"
 										/>
 									</div>
 									<div class="form-group">
@@ -168,8 +168,8 @@
 											type="text"
 											class="form-control"
 											id="descriptionInput"
-											name="description"
-											value="{{ apenado['description'] }}"
+											name="descricao"
+											value="{{ apenado['descricao'] }}"
 										/>
 									</div>
 									<div class="form-group">
@@ -180,8 +180,8 @@
 											type="number"
 											class="form-control"
 											id="dangerLevelInput"
-											name="danger_level"
-											value="{{ apenado['danger_level'] }}"
+											name="relevancia"
+											value="{{ apenado['relevancia'] }}"
 											min="1"
 											max="5"
 										/>
@@ -243,7 +243,7 @@
 										type="text"
 										class="form-control"
 										id="fullNameInput"
-										name="name"
+										name="nome"
 										required
 									/>
 								</div>
@@ -263,7 +263,7 @@
 										type="text"
 										class="form-control"
 										id="addressInput"
-										name="address"
+										name="endereco"
 										required
 									/>
 								</div>
@@ -275,7 +275,7 @@
 										type="text"
 										class="form-control"
 										id="descriptionInput"
-										name="description"
+										name="descricao"
 										required
 									/>
 								</div>
@@ -287,7 +287,7 @@
 										type="number"
 										class="form-control"
 										id="dangerLevelInput"
-										name="danger_level"
+										name="relevancia"
 										required
 										min="1"
 										max="5"
