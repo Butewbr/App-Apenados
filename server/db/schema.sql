@@ -5,7 +5,7 @@ CREATE TABLE Pessoa (
 
 CREATE TABLE Policial (
     matricula VARCHAR(50) PRIMARY KEY,
-    cpf VARCHAR(11) UNIQUE,
+    cpf_pessoa VARCHAR(11) UNIQUE,
     password_hash VARCHAR(100) NOT NULL,
     telefone VARCHAR(20),
     FOREIGN KEY (cpf) REFERENCES Pessoa(cpf)

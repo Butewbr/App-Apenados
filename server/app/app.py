@@ -83,15 +83,18 @@ def register():
         cur = conn.cursor()
         cur.execute("SELECT matricula FROM Policial WHERE matricula = %s", (matricula,))
         user_exists = cur.fetchone()
+        cur.execute("SELECT cpf FROM Pessoa WHERE cpf = %s", (cpf,))
+        pessoa_exists = cur.fetchone()
 
-        if user_exists is None:
+        if pessoa_exists is None:
             hashed_password = generate_password_hash(password).decode('utf-8')
             cur.execute("""
                 INSERT INTO Pessoa (cpf, nome)
                 VALUES (%s, %s)
             """, (cpf, nome))
+        if user_exists is None:
             cur.execute("""
-                INSERT INTO Policial (matricula, password_hash, telefone, cpf)
+                INSERT INTO Policial (matricula, password_hash, telefone, cpf_pessoa)
                 VALUES (%s, %s, %s, %s)
             """, (matricula, hashed_password, telefone, cpf))
             conn.commit()
