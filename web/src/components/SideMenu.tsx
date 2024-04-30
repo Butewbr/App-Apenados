@@ -20,6 +20,7 @@ import ListItemText from '@mui/material/ListItemText';
 // import MailIcon from '@mui/icons-material/Mail';
 // import { red } from '@mui/material/colors';
 import { Face, LocalPolice, MinorCrash, PersonAdd } from '@mui/icons-material';
+import { BasicTabs } from './Tabs';
 
 const drawerWidth = 240;
 
@@ -99,7 +100,7 @@ export default function PersistentDrawerLeft() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            POLÍCIA MILITAR
+            MONITORA PM
           </Typography>
         </Toolbar>
       </AppBar>
@@ -142,7 +143,9 @@ export default function PersistentDrawerLeft() {
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
-       
+          
+
+        <BasicTabs/>
       </Main>
     </Box>
   );
