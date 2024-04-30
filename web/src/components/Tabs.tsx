@@ -58,13 +58,37 @@ export  function BasicTabs() {
       </Box>
       <CustomTabPanel value={value} index={0}>
         <Box display="flex" gap={2}>
-          <TextField label="Username" fullWidth />
-          <TextField label="Username" fullWidth/>
-          <TextField label="Username" fullWidth/>
-          <TextField label="Username" fullWidth/>
+        <Box display="flex" flexDirection="column" width="100%" gap={1}>
+        <Typography>Informações de Acesso</Typography>
+         <TextField label="Matrícula" fullWidth />
+          <TextField label="Senha" fullWidth/>
+          <TextField label="Confirmar senha" fullWidth/>
         </Box>
 
-        <Button variant='contained' sx={{mt:2}}>Enviar</Button>
+
+        <Box display="flex" flexDirection="column" width="100%" gap={1}>
+        <Typography>Dados pessoais</Typography>
+         <TextField label="Nome" fullWidth />
+          <TextField label="Sobrenome" fullWidth/>
+          <TextField  label="CPF" fullWidth/>
+        </Box>
+
+
+        <Box display="flex" flexDirection="column" width="100%" gap={1}>
+        <Typography>Dados profissionais</Typography>
+         <TextField  label="Cargo" fullWidth />
+          <TextField label="Unidade Policial" fullWidth/>
+          <TextField label="Situação" fullWidth/>
+        </Box>
+
+        <Box display="flex" flexDirection="column" width="100%" gap={1}>
+        <Typography>Contato</Typography>
+         <TextField type='tel' label="Telefone" fullWidth />
+          <TextField type='email' label="Email" fullWidth/>
+        </Box>
+        </Box>
+
+        <Button variant='contained' sx={{mt:2}}>Cadastrar PM</Button>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
         Item Two
