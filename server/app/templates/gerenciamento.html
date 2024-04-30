@@ -1,145 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Data Display</title>
+		<!-- Bootstrap CSS -->
+		<link
+			rel="stylesheet"
+			href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+		/>
+	</head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Display</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
+	<body>
+		<h1>Data:</h1>
+		<input
+			type="text"
+			class="form-control mb-3"
+			id="searchInput"
+			placeholder="Search..."
+		/>
+		<button
+			type="button"
+			class="btn btn-success mb-3"
+			data-toggle="modal"
+			data-target="#addApenadoModal"
+		>
+			Add Apenado
+		</button>
 
-<body>
+		<ul id="apenadosList">
+			{% for apenado in apenados %}
+			<li>
+				<a href="#" data-toggle="modal" data-target="#modal{{ apenado['id'] }}"
+					>{{ apenado['nome'] }}</a
+				>
+				<!-- Modal -->
+				<div
+					class="modal fade"
+					id="modal{{ apenado['id'] }}"
+					tabindex="-1"
+					role="dialog"
+					aria-labelledby="{{ apenado['id'] }}ModalLabel"
+					aria-hidden="true"
+				>
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="{{ apenado['id'] }}ModalLabel">
+									{{ apenado['nome'] }}
+								</h5>
+								<button
+									type="button"
+									class="close"
+									data-dismiss="modal"
+									aria-label="Close"
+								>
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<div
+									class="btn-group"
+									role="group"
+									aria-label="Actions"
+								>
+									<button
+										type="button"
+										class="btn btn-primary editButton"
+										data-target="modal{{ apenado['id'] }}"
+									>
+										Edit
+									</button>
+									<form
+										method="POST"
+										action="/delete_apenado"
+										class="deleteForm"
+									>
+										<input
+											type="hidden"
+											name="id"
+											value="{{ apenado['id'] }}"
+										/>
+										<button
+											type="submit"
+											class="btn btn-danger"
+										>
+											Delete
+										</button>
+									</form>
+								</div>
+								<!-- Inside the modal-body -->
+								<p>
+									<strong>Nome:</strong> {{ apenado['nome'] }}
+								</p>
+								<p>
+									<strong>CPF:</strong> {{ apenado['cpf'] }}
+								</p>
+								<p>
+									<strong>Endereço:</strong> {{
+									apenado['endereco'] }}
+								</p>
+								<p>
+									<strong>Descrição:</strong> {{
+									apenado['descricao'] }}
+								</p>
+								<p>
+									<strong>Nível de Perigo:</strong> {{
+									apenado['relevancia'] }}
+								</p>
+								<form
+									method="POST"
+									action="/update_data"
+									class="editForm"
+									style="display: none"
+								>
+                                    <div class="form-group hidden" style="display: none">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="fullNameInput"
+                                            name="id"
+                                            value="{{ apenado['id'] }}"
+                                            readonly
+                                        />
+                                    </div>
+									<div class="form-group">
+										<label for="fullNameInput"
+											>Nome:</label
+										>
+										<input
+											type="text"
+											class="form-control"
+											id="fullNameInput"
+											name="nome"
+											value="{{ apenado['nome'] }}"
+											readonly
+										/>
+									</div>
+									<div class="form-group">
+										<label for="cpfInput">CPF:</label>
+										<input
+											type="text"
+											class="form-control"
+											id="cpfInput"
+											name="cpf"
+											value="{{ apenado['cpf'] }}"
+                                            readonly
+										/>
+									</div>
+									<div class="form-group">
+										<label for="addressInput"
+											>Endereço:</label
+										>
+										<input
+											type="text"
+											class="form-control"
+											id="addressInput"
+											name="endereco"
+											value="{{ apenado['endereco'] }}"
+										/>
+									</div>
+									<div class="form-group">
+										<label for="descriptionInput"
+											>Descrição:</label
+										>
+										<input
+											type="text"
+											class="form-control"
+											id="descriptionInput"
+											name="descricao"
+											value="{{ apenado['descricao'] }}"
+										/>
+									</div>
+									<div class="form-group">
+										<label for="dangerLevelInput"
+											>Nível de Perigo:</label
+										>
+										<input
+											type="number"
+											class="form-control"
+											id="dangerLevelInput"
+											name="relevancia"
+											value="{{ apenado['relevancia'] }}"
+											min="1"
+											max="5"
+										/>
+									</div>
+									<!-- Add more form fields as needed -->
+									<button
+										type="submit"
+										class="btn btn-primary"
+									>
+										Save Changes
+									</button>
+								</form>
+							</div>
+							<div class="modal-footer">
+								<button
+									type="button"
+									class="btn btn-secondary"
+									data-dismiss="modal"
+								>
+									Close
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</li>
+			{% endfor %}
 
-    <h1>Data:</h1>
-    <input type="text" class="form-control mb-3" id="searchInput" placeholder="Search...">
-    <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addApenadoModal">Add
-        Apenado</button>
+			<div
+				class="modal fade"
+				id="addApenadoModal"
+				tabindex="-1"
+				role="dialog"
+				aria-labelledby="addApenadoModalLabel"
+				aria-hidden="true"
+			>
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="addApenadoModalLabel">
+								Add Apenado
+							</h5>
+							<button
+								type="button"
+								class="close"
+								data-dismiss="modal"
+								aria-label="Close"
+							>
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<form method="POST" action="/add_apenado">
+								<div class="form-group">
+									<label for="fullNameInput"
+										>Nome:</label
+									>
+									<input
+										type="text"
+										class="form-control"
+										id="fullNameInput"
+										name="nome"
+										required
+									/>
+								</div>
+								<div class="form-group">
+									<label for="cpfInput">CPF:</label>
+									<input
+										type="text"
+										class="form-control"
+										id="cpfInput"
+										name="cpf"
+										required
+									/>
+								</div>
+								<div class="form-group">
+									<label for="addressInput">Endereço:</label>
+									<input
+										type="text"
+										class="form-control"
+										id="addressInput"
+										name="endereco"
+										required
+									/>
+								</div>
+								<div class="form-group">
+									<label for="descriptionInput"
+										>Descrição:</label
+									>
+									<input
+										type="text"
+										class="form-control"
+										id="descriptionInput"
+										name="descricao"
+										required
+									/>
+								</div>
+								<div class="form-group">
+									<label for="dangerLevelInput"
+										>Nível de Perigo:</label
+									>
+									<input
+										type="number"
+										class="form-control"
+										id="dangerLevelInput"
+										name="relevancia"
+										required
+										min="1"
+										max="5"
+									/>
+								</div>
+								<!-- Add more form fields as needed -->
+								<button type="submit" class="btn btn-primary">
+									Add Apenado
+								</button>
+							</form>
+						</div>
+						<div class="modal-footer">
+							<button
+								type="button"
+								class="btn btn-secondary"
+								data-dismiss="modal"
+							>
+								Close
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ul>
 
-    <ul id="apenadosList">
+		<!-- Bootstrap JS and jQuery -->
+		<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-        {% for name, data in apenados.items() %}
-        <li>
-            <a href="#" data-toggle="modal" data-target="#{{ name|replace(" ", "") }}Modal">{{ name }}</a>
-            <!-- Modal -->
-            <div class="modal fade" id="{{ name|replace(" ", "") }}Modal" tabindex="-1" role="dialog"
-                aria-labelledby="{{ name|replace(" ", "") }}ModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="{{ name|replace(" ", "") }}ModalLabel">{{ name }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="btn-group" role="group" aria-label="Actions">
-                                <button type="button" class="btn btn-primary editButton">Edit</button>
-                                <form method="POST" action="/delete_apenado" class="deleteForm">
-                                    <input type="hidden" name="name" value="{{ name }}">
-                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                </form>
-                            </div>
-                            <!-- Inside the modal-body -->
-                            <p><strong>Name:</strong> <span id="name">{{ name }}</span></p>
-                            <p><strong>Data:</strong> <span id="data">{{ data }}</span></p>
-                            <form method="POST" action="/update_data" class="editForm" style="display: none;">
-                                <div class="form-group">
-                                    <label for="nameInput">Name:</label>
-                                    <input type="text" class="form-control" id="nameInput" name="name"
-                                        value="{{ name }}" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label for="dataInput">Data:</label>
-                                    <input type="text" class="form-control" id="dataInput" name="data"
-                                        value="{{ data }}">
-                                </div>
-                                <!-- Add more form fields as needed -->
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                            </form>
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+				let editButtons = document.querySelectorAll(".editButton");
+				let editForms = document.querySelectorAll(".editForm");
 
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </li>
-        <script>
-            let editButton{{ name| replace(" ", "") }} = document.querySelector('#{{ name|replace(" ", "") }}Modal .editButton');
-            let editForm{{ name| replace(" ", "") }} = document.querySelector('#{{ name|replace(" ", "") }}Modal .editForm');
-    
-            editButton{{ name | replace(" ", "") }}.addEventListener('click', function () {
-                console.log("JUST CLICKED IN THE {{name|replace(" ", "")}} EDIT BUTTON!!");
-                editForm{{name|replace(" ", "")}}.style.display = 'block';
-            });
-        </script>
-        {% endfor %}
+				for (let i = 0; i < editButtons.length; i++) {
+					editButtons[i].addEventListener("click", function () {
+						editForms[i].style.display = "block";
+					});
+				}
 
-        <div class="modal fade" id="addApenadoModal" tabindex="-1" role="dialog" aria-labelledby="addApenadoModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addApenadoModalLabel">Add Apenado</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="/add_apenado">
-                            <div class="form-group">
-                                <label for="nameInput">Name:</label>
-                                <input type="text" class="form-control" id="nameInput" name="name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="dataInput">Data:</label>
-                                <input type="text" class="form-control" id="dataInput" name="data" required>
-                            </div>
-                            <!-- Add more form fields as needed -->
-                            <button type="submit" class="btn btn-primary">Add Apenado</button>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </ul>
-
-    <!-- Bootstrap JS and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function ()
-        {
-            document.getElementById('searchInput').addEventListener('input', function ()
-            {
-                let searchText = this.value.trim().toLowerCase();
-                let apenadosList = document.getElementById('apenadosList');
-                let apenadosItems = apenadosList.getElementsByTagName('a');
-                for (let item of apenadosItems)
-                {
-                    let itemName = item.textContent.trim().toLowerCase();
-                    let listItem = item.parentNode; // Get the parent list item
-                    if (itemName.includes(searchText))
-                    {
-                        listItem.style.display = 'block';
-                    } else
-                    {
-                        listItem.style.display = 'none';
-                    }
-                }
-            });
-        });
-    </script>
-
-
-</body>
-
+				document
+					.getElementById("searchInput")
+					.addEventListener("input", function () {
+						let searchText = this.value.trim().toLowerCase();
+						let apenadosList =
+							document.getElementById("apenadosList");
+						let apenadosItems =
+							apenadosList.getElementsByTagName("a");
+						for (let item of apenadosItems) {
+							let itemName = item.textContent
+								.trim()
+								.toLowerCase();
+							let listItem = item.parentNode; // Get the parent list item
+							if (itemName.includes(searchText)) {
+								listItem.style.display = "block";
+							} else {
+								listItem.style.display = "none";
+							}
+						}
+					});
+			});
+		</script>
+	</body>
 </html>

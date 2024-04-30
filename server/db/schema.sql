@@ -1,27 +1,52 @@
 CREATE TABLE Pessoa (
-    CPF VARCHAR(11) PRIMARY KEY,
-    Nome VARCHAR(100)
+    cpf VARCHAR(11) PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE Policial (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    CPF_pessoa VARCHAR(11) UNIQUE,
-    Senha VARCHAR(100),
-    Telefone VARCHAR(20),
-    FOREIGN KEY (CPF_pessoa) REFERENCES Pessoa(CPF)
+    matricula VARCHAR(50) PRIMARY KEY,
+    cpf_pessoa VARCHAR(11) UNIQUE,
+    password_hash VARCHAR(100) NOT NULL,
+    telefone VARCHAR(20),
+    FOREIGN KEY (cpf) REFERENCES Pessoa(cpf)
 );
 
-CREATE TABLE Apenado (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    CPF_pessoa VARCHAR(11) UNIQUE,
-    Endereco VARCHAR(255),
-    Relevancia INT,
-    Data_fim_liberdade DATE,
-    FOREIGN KEY (CPF_pessoa) REFERENCES Pessoa(CPF)
+CREATE TABLE Endereco (
+    id SERIAL PRIMARY KEY,
+    rua VARCHAR(250),
+    numero INT,
+    complemento VARCHAR(250),
+    cep INT,
+    estado VARCHAR(250),
+    municipio VARCHAR(250)
+);
+
+CREATE TABLE ArtigoPenal (
+    id SERIAL PRIMARY KEY,
+    descricao VARCHAR(1000) NOT NULL
 );
 
 CREATE TABLE Crime (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    Data DATE,
-    Descricao VARCHAR(255)
+    id SERIAL PRIMARY KEY,
+    data_ocorrido DATE,
+    descricao VARCHAR(1000),
+    id_artigo_penal INT REFERENCES ArtigoPenal(id)
+);
+
+CREATE TABLE Apenado (
+    id SERIAL PRIMARY KEY,
+    cpf VARCHAR(11) UNIQUE,
+    id_endereco INT REFERENCES Endereco(id),
+    id_crime INT REFERENCES Crime(id),
+    Relevancia INT,
+    Data_fim_liberdade DATE,
+    FOREIGN KEY (cpf) REFERENCES Pessoa(cpf)
+);
+
+CREATE TABLE Visita (
+    id SERIAL PRIMARY KEY,
+    observacao VARCHAR(1000) NOT NULL,
+    id_endereco INT REFERENCES Endereco(id),
+    matricula_policial VARCHAR(50) REFERENCES Policial(matricula),
+    id_apenado INT REFERENCES Apenado(id)
 );
