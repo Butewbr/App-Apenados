@@ -62,9 +62,9 @@ export  function BasicTabs() {
           <TextField label="Username" fullWidth/>
           <TextField label="Username" fullWidth/>
           <TextField label="Username" fullWidth/>
-
-          <Button variant='contained'>Enviar</Button>
         </Box>
+
+        <Button variant='contained' sx={{mt:2}}>Enviar</Button>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
         Item Two
