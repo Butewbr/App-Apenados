@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
   Image,
   TextInput
 } from 'react-native';
-import MapLibreGL, {Logger} from '@maplibre/maplibre-react-native';
+import MapLibreGL, { Logger } from '@maplibre/maplibre-react-native';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 import * as Animatable from 'react-native-animatable';
@@ -18,14 +18,25 @@ const api = axios.create({
   baseURL: 'http://10.0.2.2:3000/'
 });
 
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
+const SyncButton = ({ onPress }) => {
+  return (
+    <View style={styles.syncButtonContainer}>
+      <TouchableOpacity style={styles.roundButton} onPress={onPress}>
+        <FontAwesomeIcon icon={faSync} color="#000" size={30} />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
   faMapMarkerAlt,
   faArrowLeft,
   faLocationArrow,
   faEye,
   faEyeSlash,
-  faXmark
+  faXmark,
+  faSync
 } from '@fortawesome/free-solid-svg-icons';
 
 LogBox.ignoreLogs(['Warning: ...']);
@@ -35,7 +46,7 @@ MapLibreGL.setAccessToken(null);
 MapLibreGL.setConnected(true);
 
 Logger.setLogCallback(log => {
-  const {message} = log;
+  const { message } = log;
 
   if (
     message.match('Request failed due to a permanent error: Canceled') ||
@@ -55,20 +66,18 @@ export default function Map() {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [observacao, setObservacao] = useState('');
 
-  function handleSubmitVisita(id: any) {
-    const novaVisita = {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      id_alt_penal: id,
-      observacao
-    };
-    api
-      .post('/vis', novaVisita)
-      .then(() => {
-        setVisitaVisible(false);
-        setObservacao('');
-      })
-      .catch(error => console.log(error));
-  }
+  // Handle synchronization
+  const handleSync = () => {
+    // Call your API to synchronize data
+    // Example:
+    // api.post('http://your-api-url/sync', jsonData)
+    //   .then(response => {
+    //     // Handle success
+    //   })
+    //   .catch(error => {
+    //     // Handle error
+    //   });
+  };
 
   useEffect(() => {
     return () => {
@@ -82,6 +91,7 @@ export default function Map() {
       .then(response => setEndereco(response.data))
       .catch(error => console.log(error.toJSON()));
   }, []);
+
   {
     function watchPosition() {
       Geolocation.requestAuthorization(
@@ -128,7 +138,7 @@ export default function Map() {
           style={styles.map}
           logoEnabled={false}
           styleURL={`https://api.maptiler.com/maps/streets-v2/style.json?key=8BO4NhEjNmKwVKxsVu8b`}
-          attributionPosition={{bottom: 8, right: 8}}>
+          attributionPosition={{ bottom: 8, right: 8 }}>
           <MapLibreGL.Camera
             followUserLocation={centerPoint ? true : false}
             defaultSettings={{
@@ -149,7 +159,7 @@ export default function Map() {
                 setSelectedPerson(p);
               }}>
               <TouchableOpacity
-                style={{maxWidth: '7%'}}
+                style={{ maxWidth: '7%' }}
                 onPress={() => {
                   setModalVisible(true);
                   setSelectedPerson(p);
@@ -201,7 +211,7 @@ export default function Map() {
               style={styles.button}
               onPress={stopFollowing}
               activeOpacity={0.7}>
-              <FontAwesomeIcon icon={faEyeSlash} color="#000" size={33} />
+              <FontAwesomeIcon icon={faEyeSlash} color="#000" size={30} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -254,7 +264,7 @@ export default function Map() {
                             : '#E30613'
                       }
                     ]}>
-                    <Text style={{color: '#26117A'}}>Relevância: </Text>
+                    <Text style={{ color: '#26117A' }}>Relevância: </Text>
                     {selectedPerson
                       ? selectedPerson.relevancia < 4
                         ? 'BAIXA'
@@ -264,13 +274,13 @@ export default function Map() {
                       : ''}
                   </Text>
                   <Text style={styles.relevancia}>
-                    <Text style={{color: '#26117A'}}>Início de Pena: </Text>
+                    <Text style={{ color: '#26117A' }}>Início de Pena: </Text>
                     {selectedPerson
                       ? formatarData(selectedPerson.data_ins)
                       : ''}
                   </Text>
                   <Text style={styles.relevancia}>
-                    <Text style={{color: '#26117A'}}>Fim de Pena: </Text>
+                    <Text style={{ color: '#26117A' }}>Fim de Pena: </Text>
                     {selectedPerson ? formatarData(selectedPerson.data_at) : ''}
                   </Text>
                 </View>
@@ -349,12 +359,10 @@ export default function Map() {
                 onPress={() => {
                   setVisitaVisible(true);
                 }}>
-                <Text style={{fontSize: 18, fontWeight: 700, color: '#fff'}}>
+                <Text style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>
                   Registrar Visita
                 </Text>
               </TouchableOpacity>
-              {/*  <Text>{selectedPerson.age}</Text> */}
-              {/* // Adicionar aqui os campos conforme necessário */}
             </View>
           </Modal>
         )}
@@ -408,7 +416,7 @@ export default function Map() {
                     marginTop: 10,
                     marginBottom: -15
                   }}>
-                  *<Text style={{color: '#7D7D7D'}}>Observação:</Text>
+                  *<Text style={{ color: '#7D7D7D' }}>Observação:</Text>
                 </Text>
                 <TextInput
                   multiline
@@ -428,6 +436,9 @@ export default function Map() {
             </View>
           </Modal>
         )}
+
+        {/* Render the SyncButton component */}
+        <SyncButton onPress={handleSync} />
       </View>
     );
   }
@@ -473,6 +484,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     margin: '5%'
+    //borderWidth: 1
+  },
+  roundButton: {
+    backgroundColor: '#FFF',
+    borderRadius: 50,
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
     //borderWidth: 1
   },
   condenado: {
@@ -613,6 +632,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 5
+  },
+  syncButtonContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    borderRadius: 0.5
   },
   btnText: {
     color: '#fff',
