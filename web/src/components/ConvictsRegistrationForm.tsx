@@ -38,7 +38,7 @@ function a11yProps(index: number) {
   };
 }
 
-export  function BasicTabs() {
+export  function ConvictsRegistrationForm() {
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -48,12 +48,12 @@ export  function BasicTabs() {
   return (
     <Box sx={{ width: '100%' }}>
 
-      <Typography variant='h5'>Cadastro de PM's</Typography>
+      <Typography variant='h5'>Cadastro de Apenados</Typography>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Informações Gerais" {...a11yProps(0)} />
-          <Tab label="Item Two" {...a11yProps(1)} />
-          <Tab label="Item Three" {...a11yProps(2)} />
+          <Tab label="Informações Penais" {...a11yProps(0)} />
+          <Tab label="Informações Pessoais" {...a11yProps(1)} />
+          <Tab label="Crimes" {...a11yProps(2)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
@@ -90,12 +90,12 @@ export  function BasicTabs() {
 
         <Button variant='contained' sx={{mt:2}}>Cadastrar PM</Button>
       </CustomTabPanel>
-      <CustomTabPanel value={value} index={1}>
+      {/* <CustomTabPanel value={value} index={1}>
         Item Two
       </CustomTabPanel>
       <CustomTabPanel value={value} index={2}>
         Item Three
-      </CustomTabPanel>
+      </CustomTabPanel> */}
     </Box>
   );
 }

@@ -1,15 +1,12 @@
 
-
-
-// import "./global.css"
-
-import PersistentDrawerLeft from "./components/SideMenu"
+import { BrowserRouter } from "react-router-dom"
+import { Router } from "./Routes"
 
 export function App() {
   return (
-  <>
-    <PersistentDrawerLeft/>
-  </>
+  <BrowserRouter>
+    <Router/>
+  </BrowserRouter>
   )
 }
 
