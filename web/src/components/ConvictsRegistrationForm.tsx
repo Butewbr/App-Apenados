@@ -3,7 +3,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { Button, TextField } from '@mui/material';
+import { Button, InputLabel, MenuItem, Select, TextField, TextareaAutosize } from '@mui/material';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -45,6 +45,12 @@ export  function ConvictsRegistrationForm() {
     setValue(newValue);
   };
 
+  const [relevancia, setRelevancia] = React.useState('');
+
+  const handleSelectChange = (event: SelectChangeEvent) => {
+    setRelevancia(event.target.value as string);
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
 
@@ -58,15 +64,17 @@ export  function ConvictsRegistrationForm() {
       </Box>
       <CustomTabPanel value={value} index={0}>
         <Box display="flex" gap={2}>
-        <Box display="flex" flexDirection="column" width="100%" gap={1}>
-        <Typography>Informações de Acesso</Typography>
-         <TextField label="Matrícula" fullWidth />
-          <TextField label="Senha" fullWidth/>
-          <TextField label="Confirmar senha" fullWidth/>
+        <Box display="flex" flexDirection="column" width="100%" gap={2}>
+        {/* <Typography>Informações de Acesso</Typography> */}
+         <TextField label="Vara" fullWidth />
+          <TextField label="Nº Autos" fullWidth/>
+          <TextField type='date' label="Data de ínicio" placeholder=''  fullWidth/>
+          <TextField type='date' label="Data de fim" placeholder=''  fullWidth/>
+          
         </Box>
 
 
-        <Box display="flex" flexDirection="column" width="100%" gap={1}>
+        {/* <Box display="flex" flexDirection="column" width="100%" gap={1}>
         <Typography>Dados pessoais</Typography>
          <TextField label="Nome" fullWidth />
           <TextField label="Sobrenome" fullWidth/>
@@ -79,23 +87,57 @@ export  function ConvictsRegistrationForm() {
          <TextField  label="Cargo" fullWidth />
           <TextField label="Unidade Policial" fullWidth/>
           <TextField label="Situação" fullWidth/>
+        </Box> */}
+
+     
         </Box>
 
-        <Box display="flex" flexDirection="column" width="100%" gap={1}>
-        <Typography>Contato</Typography>
-         <TextField type='tel' label="Telefone" fullWidth />
-          <TextField type='email' label="Email" fullWidth/>
-        </Box>
-        </Box>
-
-        <Button variant='contained' sx={{mt:2}}>Cadastrar PM</Button>
+        <Button variant='contained' sx={{mt:2}}>SALVAR</Button>
       </CustomTabPanel>
       {/* <CustomTabPanel value={value} index={1}>
         Item Two
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={2}>
-        Item Three
       </CustomTabPanel> */}
+      <CustomTabPanel value={value} index={2}>
+      <Box display="flex" gap={2}>
+        <Box display="flex" flexDirection="column" width="100%" gap={2}>
+        {/* <Typography>Informações de Acesso</Typography> */}
+         <TextField label="Crime" fullWidth />
+         <InputLabel id="demo-simple-select-label">Relevância</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={relevancia}
+          label="Age"
+          onChange={handleSelectChange}
+        >
+          <MenuItem value={10}>Ativo</MenuItem>
+          <MenuItem value={20}>Exem1</MenuItem>
+          <MenuItem value={30}>Exem2</MenuItem>
+
+          </Select>
+         
+          
+        </Box>
+
+
+        {/* <Box display="flex" flexDirection="column" width="100%" gap={1}>
+        <Typography>Dados pessoais</Typography>
+         <TextField label="Nome" fullWidth />
+          <TextField label="Sobrenome" fullWidth/>
+          <TextField  label="CPF" fullWidth/>
+        </Box>
+
+
+        <Box display="flex" flexDirection="column" width="100%" gap={1}>
+        <Typography>Dados profissionais</Typography>
+         <TextField  label="Cargo" fullWidth />
+          <TextField label="Unidade Policial" fullWidth/>
+          <TextField label="Situação" fullWidth/>
+        </Box> */}
+
+     
+        </Box>
+      </CustomTabPanel>
     </Box>
   );
 }
