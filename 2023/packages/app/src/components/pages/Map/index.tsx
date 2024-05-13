@@ -22,7 +22,7 @@ const SyncButton = ({ onPress }) => {
   return (
     <View style={styles.syncButtonContainer}>
       <TouchableOpacity style={styles.roundButton} onPress={onPress}>
-        <FontAwesomeIcon icon={faSync} color="#000" size={30} />
+        <FontAwesomeIcon icon={faSync} color="#000" size={24} />
       </TouchableOpacity>
     </View>
   );
@@ -36,7 +36,13 @@ import {
   faEye,
   faEyeSlash,
   faXmark,
-  faSync
+  faSync,
+  faThumbTack,
+  faLocationPinLock,
+  faLocationPin,
+  faLocationDot,
+  faArrowsToDot,
+  faArrowsToCircle
 } from '@fortawesome/free-solid-svg-icons';
 
 LogBox.ignoreLogs(['Warning: ...']);
@@ -79,19 +85,6 @@ export default function Map() {
     //   });
   };
 
-  useEffect(() => {
-    return () => {
-      clearLocationAccess();
-    };
-  }, []);
-
-  useEffect(() => {
-    api
-      .get(`/ap-vis-pessoa/`)
-      .then(response => setEndereco(response.data))
-      .catch(error => console.log(error.toJSON()));
-  }, []);
-
   {
     function watchPosition() {
       Geolocation.requestAuthorization(
@@ -126,6 +119,18 @@ export default function Map() {
 
       return `${dia}/${mes}/${ano}`;
     }
+
+    useEffect(() => {
+      clearLocationAccess();
+      watchPosition();
+    }, []);
+  
+    useEffect(() => {
+      api
+        .get(`/ap-vis-pessoa/`)
+        .then(response => setEndereco(response.data))
+        .catch(error => console.log(error.toJSON()));
+    }, []);
 
     return (
       <View style={styles.page}>
@@ -167,7 +172,7 @@ export default function Map() {
                 activeOpacity={0.8}>
                 <FontAwesomeIcon
                   icon={faMapMarkerAlt}
-                  size={30}
+                  size={22}
                   color={
                     p.relevancia < 4
                       ? '#FFDE14'
@@ -191,34 +196,34 @@ export default function Map() {
           style={styles.btnContainer}
           animation={'slideInUp'}
           easing={'ease-in-out'}>
-          {locationAccess !== null ? (
+          {/* {locationAccess !== null ? (
             <TouchableOpacity
               style={styles.button}
               onPress={clearLocationAccess}
-              activeOpacity={0.7}>
-              <FontAwesomeIcon icon={faXmark} color="#000" size={30} />
+              activeOpacity={0.9}>
+              <FontAwesomeIcon icon={faXmark} color="#000" size={24} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={styles.button}
               onPress={watchPosition}
-              activeOpacity={0.7}>
-              <FontAwesomeIcon icon={faLocationArrow} color="#000" size={30} />
+              activeOpacity={0.9}>
+              <FontAwesomeIcon icon={faLocationArrow} color="#000" size={24} />
             </TouchableOpacity>
-          )}
+          )} */}
           {centerPoint !== null ? (
             <TouchableOpacity
               style={styles.button}
               onPress={stopFollowing}
-              activeOpacity={0.7}>
-              <FontAwesomeIcon icon={faEyeSlash} color="#000" size={30} />
+              activeOpacity={0.9}>
+              <FontAwesomeIcon icon={faArrowsToDot} color="#000" size={22} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={styles.button}
               onPress={centratePoint}
-              activeOpacity={0.7}>
-              <FontAwesomeIcon icon={faEye} color="#000" size={30} />
+              activeOpacity={0.9}>
+              <FontAwesomeIcon icon={faArrowsToDot} color="#000" size={22} />
             </TouchableOpacity>
           )}
         </Animatable.View>
@@ -231,7 +236,7 @@ export default function Map() {
             onRequestClose={() => setModalVisible(false)}>
             <View style={styles.condenado}>
               <TouchableOpacity
-                activeOpacity={0.7}
+                activeOpacity={0.9}
                 style={styles.condButton}
                 onPress={() => {
                   setModalVisible(false);
@@ -354,7 +359,7 @@ export default function Map() {
               </Text>
 
               <TouchableOpacity
-                activeOpacity={0.7}
+                activeOpacity={0.9}
                 style={styles.visitaButton}
                 onPress={() => {
                   setVisitaVisible(true);
@@ -375,7 +380,7 @@ export default function Map() {
             onRequestClose={() => setVisitaVisible(false)}>
             <View style={styles.condenado}>
               <TouchableOpacity
-                activeOpacity={0.7}
+                activeOpacity={0.9}
                 style={styles.visitaBack}
                 onPress={() => {
                   setVisitaVisible(false);
@@ -397,12 +402,12 @@ export default function Map() {
               <View style={styles.visitaCheck}>
                 <TouchableOpacity
                   style={styles.visitaCheckSim}
-                  activeOpacity={0.7}>
+                  activeOpacity={0.9}>
                   <Text style={styles.btnText}>SIM</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.visitaCheckNao}
-                  activeOpacity={0.7}>
+                  activeOpacity={0.9}>
                   <Text style={styles.btnText}>NÃO</Text>
                 </TouchableOpacity>
               </View>
@@ -426,7 +431,7 @@ export default function Map() {
                 />
               </View>
 
-              <TouchableOpacity style={styles.sendBtn} activeOpacity={0.7}>
+              <TouchableOpacity style={styles.sendBtn} activeOpacity={0.9}>
                 <Text
                   style={styles.btnText}
                   onPress={() => handleSubmitVisita(selectedPerson?.id)}>
@@ -486,14 +491,27 @@ const styles = StyleSheet.create({
     margin: '5%'
     //borderWidth: 1
   },
+  syncButtonContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    borderRadius: 0.5
+  },
   roundButton: {
     backgroundColor: '#FFF',
     borderRadius: 50,
     padding: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    //borderWidth: 1
-  },
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.55,
+    shadowRadius: 4.84,
+    elevation: 5,
+  },  
   condenado: {
     flex: 1,
     marginHorizontal: 28
@@ -632,12 +650,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 5
-  },
-  syncButtonContainer: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    borderRadius: 0.5
   },
   btnText: {
     color: '#fff',
