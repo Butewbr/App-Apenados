@@ -5,10 +5,36 @@ services:
     build:
       context: .
       dockerfile: server/Dockerfile
+    image: apenados-py:latest
     ports:
       - "5000:5000"
     volumes:
       - type: bind
         source: ./server/app
         target: /app
+    networks:
+      - db-network
 
+  database:
+    environment:
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=appApenadosDB
+      - PG_USER=postgres
+      - POSTGRES_USER=postgres
+    build:
+      context: .
+      dockerfile: db/Dockerfile
+    image: postgres-db:latest
+    volumes:
+      - ${PWD}/db/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - db-network
+
+networks:
+  db-network:
+    driver: bridge

@@ -193,7 +193,7 @@ export default function Map() {
         </MapLibreGL.MapView>
 
         <Animatable.View
-          style={styles.btnContainer}
+          style={styles.centerButton}
           animation={'slideInUp'}
           easing={'ease-in-out'}>
           {/* {locationAccess !== null ? (
@@ -213,14 +213,14 @@ export default function Map() {
           )} */}
           {centerPoint !== null ? (
             <TouchableOpacity
-              style={styles.button}
+              style={styles.roundButton}
               onPress={stopFollowing}
               activeOpacity={0.9}>
               <FontAwesomeIcon icon={faArrowsToDot} color="#000" size={22} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              style={styles.button}
+              style={styles.roundButton}
               onPress={centratePoint}
               activeOpacity={0.9}>
               <FontAwesomeIcon icon={faArrowsToDot} color="#000" size={22} />
@@ -469,17 +469,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch'
   },
-  btnContainer: {
+  centerButton: {
     position: 'absolute',
-    backgroundColor: '#73BA96',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    top: '90%',
-    width: '100%',
-    height: '10%',
-    borderTopStartRadius: 10,
-    borderTopEndRadius: 10
-    //borderWidth: 1
+    top: 120,
+    right: 20,
+    borderRadius: 0.5
   },
   button: {
     backgroundColor: '#FFF',
@@ -493,7 +487,7 @@ const styles = StyleSheet.create({
   },
   syncButtonContainer: {
     position: 'absolute',
-    top: 20,
+    top: 60,
     right: 20,
     borderRadius: 0.5
   },

@@ -3,9 +3,11 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from flask_bcrypt import generate_password_hash, check_password_hash
 import logging
 import psycopg2
+import datetime
 
 
 app = Flask(__name__)
+
 app.secret_key = 'your_secret_key'  # Change this to a random secret key
 
 logging.basicConfig(level=logging.DEBUG)
@@ -15,10 +17,10 @@ login_manager.init_app(app)
 
 def get_db():
     conn = psycopg2.connect(
-        dbname="app-apenados",
+        dbname="appApenadosDB",
         user="postgres",
-        password="admin",
-        host="localhost",
+        password="123",
+        host="database",
         port="5432"
     )
     return conn
@@ -106,71 +108,99 @@ def register():
 
     return render_template('register.html')
 
-@app.route('/api/pessoas', methods=['GET'])
-@login_required
-def get_pessoas_api():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM Pessoa")
-    pessoas = cur.fetchall()
-    pessoas_list = [dict((cur.description[i][0], value) \
-               for i, value in enumerate(row)) for row in pessoas]
-    return jsonify(pessoas_list)
+# @app.route('/api/pessoas', methods=['GET'])
+# @login_required
+# def get_pessoas_api():
+#     conn = get_db()
+#     cur = conn.cursor()
+#     cur.execute("SELECT * FROM Pessoa")
+#     pessoas = cur.fetchall()
+#     pessoas_list = [dict((cur.description[i][0], value) \
+#                for i, value in enumerate(row)) for row in pessoas]
+#     return jsonify(pessoas_list)
 
-@app.route('/api/policiais', methods=['GET'])
-@login_required
-def get_policiais_api():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM Policial")
-    policiais = cur.fetchall()
-    policiais_list = [dict((cur.description[i][0], value) \
-               for i, value in enumerate(row)) for row in policiais]
-    return jsonify(policiais_list)
+# @app.route('/api/policiais', methods=['GET'])
+# @login_required
+# def get_policiais_api():
+#     conn = get_db()
+#     cur = conn.cursor()
+#     cur.execute("SELECT * FROM Policial")
+#     policiais = cur.fetchall()
+#     policiais_list = [dict((cur.description[i][0], value) \
+#                for i, value in enumerate(row)) for row in policiais]
+#     return jsonify(policiais_list)
 
-@app.route('/api/enderecos', methods=['GET'])
-@login_required
-def get_enderecos_api():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM Endereco")
-    enderecos = cur.fetchall()
-    enderecos_list = [dict((cur.description[i][0], value) \
-               for i, value in enumerate(row)) for row in enderecos]
-    return jsonify(enderecos_list)
+# @app.route('/api/enderecos', methods=['GET'])
+# @login_required
+# def get_enderecos_api():
+#     conn = get_db()
+#     cur = conn.cursor()
+#     cur.execute("SELECT * FROM Endereco")
+#     enderecos = cur.fetchall()
+#     enderecos_list = [dict((cur.description[i][0], value) \
+#                for i, value in enumerate(row)) for row in enderecos]
+#     return jsonify(enderecos_list)
 
-@app.route('/api/crimes', methods=['GET'])
-@login_required
-def get_crimes_api():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM Crime")
-    crimes = cur.fetchall()
-    crimes_list = [dict((cur.description[i][0], value) \
-               for i, value in enumerate(row)) for row in crimes]
-    return jsonify(crimes_list)
+# @app.route('/api/crimes', methods=['GET'])
+# @login_required
+# def get_crimes_api():
+#     conn = get_db()
+#     cur = conn.cursor()
+#     cur.execute("SELECT * FROM Crime")
+#     crimes = cur.fetchall()
+#     crimes_list = [dict((cur.description[i][0], value) \
+#                for i, value in enumerate(row)) for row in crimes]
+#     return jsonify(crimes_list)
 
-@app.route('/api/artigos_penais', methods=['GET'])
-@login_required
-def get_artigos_penais_api():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM ArtigoPenal")
-    artigos_penais = cur.fetchall()
-    artigos_penais_list = [dict((cur.description[i][0], value) \
-               for i, value in enumerate(row)) for row in artigos_penais]
-    return jsonify(artigos_penais_list)
+# @app.route('/api/artigos_penais', methods=['GET'])
+# @login_required
+# def get_artigos_penais_api():
+#     conn = get_db()
+#     cur = conn.cursor()
+#     cur.execute("SELECT * FROM ArtigoPenal")
+#     artigos_penais = cur.fetchall()
+#     artigos_penais_list = [dict((cur.description[i][0], value) \
+#                for i, value in enumerate(row)) for row in artigos_penais]
+#     return jsonify(artigos_penais_list)
 
-@app.route('/api/visitas', methods=['GET'])
-@login_required
-def get_visitas_api():
+# @app.route('/api/visitas', methods=['GET'])
+# @login_required
+# def get_visitas_api():
+#     conn = get_db()
+#     cur = conn.cursor()
+#     cur.execute("SELECT * FROM Visita")
+#     visitas = cur.fetchall()
+#     visitas_list = [dict((cur.description[i][0], value) \
+#                for i, value in enumerate(row)) for row in visitas]
+#     return jsonify(visitas_list)
+
+@app.route('/api/syncdata', methods=['GET'])
+def get_all_data_api():
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM Visita")
-    visitas = cur.fetchall()
-    visitas_list = [dict((cur.description[i][0], value) \
-               for i, value in enumerate(row)) for row in visitas]
-    return jsonify(visitas_list)
+
+    # Execute all queries in one go
+    queries = [
+        "SELECT * FROM Pessoa",
+        "SELECT * FROM Policial",
+        "SELECT * FROM Endereco",
+        "SELECT * FROM Crime",
+        "SELECT * FROM ArtigoPenal",
+        "SELECT * FROM Visita"
+    ]
+    
+    all_data = {}
+    for table, query in zip(["Pessoa", "Policial", "Endereco", "Crime", "ArtigoPenal", "Visita"], queries):
+        cur.execute(query)
+        data = cur.fetchall()
+        data_list = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in data]
+        all_data[table] = data_list
+
+    # Include timestamp in the response
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    all_data["timestamp"] = timestamp
+
+    return jsonify(all_data)
 
 @app.route('/delete_apenado', methods=['POST'])
 @login_required

@@ -3,7 +3,7 @@
 
 # Build the Docker image
 # echo "Building Docker image..."
-cd server
+# cd server
 # docker compose build
 
 # # Check for build errors
