@@ -18,16 +18,6 @@ const api = axios.create({
   baseURL: 'http://10.0.2.2:3000/'
 });
 
-const SyncButton = ({ onPress }) => {
-  return (
-    <View style={styles.syncButtonContainer}>
-      <TouchableOpacity style={styles.roundButton} onPress={onPress}>
-        <FontAwesomeIcon icon={faSync} color="#000" size={24} />
-      </TouchableOpacity>
-    </View>
-  );
-};
-
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
   faMapMarkerAlt,
@@ -72,19 +62,6 @@ export default function Map() {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [observacao, setObservacao] = useState('');
 
-  // Handle synchronization
-  const handleSync = () => {
-    // Call your API to synchronize data
-    // Example:
-    // api.post('http://your-api-url/sync', jsonData)
-    //   .then(response => {
-    //     // Handle success
-    //   })
-    //   .catch(error => {
-    //     // Handle error
-    //   });
-  };
-
   {
     function watchPosition() {
       Geolocation.requestAuthorization(
@@ -100,6 +77,20 @@ export default function Map() {
       locationAccess !== null && Geolocation.clearWatch(locationAccess);
       setLocationAccess(null);
       setCenterPoint(null);
+    }
+
+    function fetchData() {
+        console.log("FETCHING DATA!");
+          axios.get('http://192.168.169.29:5000/api/syncdata')
+        .then(response => {
+          // Handle success
+          console.log(response.data);
+          // You can set the response data to state or do something else with it here
+        })
+        .catch(error => {
+          // Handle error
+          console.error('Error fetching data:', error);
+        });
     }
 
     function centratePoint() {
@@ -191,6 +182,18 @@ export default function Map() {
             visible={locationAccess ? true : false}
           />
         </MapLibreGL.MapView>
+
+        <Animatable.View 
+          style={styles.syncButtonContainer}
+          animation={'slideInUp'}
+          easing={'ease-in-out'}>
+          <TouchableOpacity
+            style={styles.roundButton}
+            onPress={fetchData}
+            activeOpacity={0.9}>
+            <FontAwesomeIcon icon={faSync} color="#000" size={22} />
+          </TouchableOpacity>
+        </Animatable.View>
 
         <Animatable.View
           style={styles.centerButton}
@@ -441,9 +444,6 @@ export default function Map() {
             </View>
           </Modal>
         )}
-
-        {/* Render the SyncButton component */}
-        <SyncButton onPress={handleSync} />
       </View>
     );
   }
