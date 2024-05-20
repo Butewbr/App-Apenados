@@ -108,77 +108,26 @@ def register():
 
     return render_template('register.html')
 
-# @app.route('/api/pessoas', methods=['GET'])
-# @login_required
-# def get_pessoas_api():
-#     conn = get_db()
-#     cur = conn.cursor()
-#     cur.execute("SELECT * FROM Pessoa")
-#     pessoas = cur.fetchall()
-#     pessoas_list = [dict((cur.description[i][0], value) \
-#                for i, value in enumerate(row)) for row in pessoas]
-#     return jsonify(pessoas_list)
-
-# @app.route('/api/policiais', methods=['GET'])
-# @login_required
-# def get_policiais_api():
-#     conn = get_db()
-#     cur = conn.cursor()
-#     cur.execute("SELECT * FROM Policial")
-#     policiais = cur.fetchall()
-#     policiais_list = [dict((cur.description[i][0], value) \
-#                for i, value in enumerate(row)) for row in policiais]
-#     return jsonify(policiais_list)
-
-# @app.route('/api/enderecos', methods=['GET'])
-# @login_required
-# def get_enderecos_api():
-#     conn = get_db()
-#     cur = conn.cursor()
-#     cur.execute("SELECT * FROM Endereco")
-#     enderecos = cur.fetchall()
-#     enderecos_list = [dict((cur.description[i][0], value) \
-#                for i, value in enumerate(row)) for row in enderecos]
-#     return jsonify(enderecos_list)
-
-# @app.route('/api/crimes', methods=['GET'])
-# @login_required
-# def get_crimes_api():
-#     conn = get_db()
-#     cur = conn.cursor()
-#     cur.execute("SELECT * FROM Crime")
-#     crimes = cur.fetchall()
-#     crimes_list = [dict((cur.description[i][0], value) \
-#                for i, value in enumerate(row)) for row in crimes]
-#     return jsonify(crimes_list)
-
-# @app.route('/api/artigos_penais', methods=['GET'])
-# @login_required
-# def get_artigos_penais_api():
-#     conn = get_db()
-#     cur = conn.cursor()
-#     cur.execute("SELECT * FROM ArtigoPenal")
-#     artigos_penais = cur.fetchall()
-#     artigos_penais_list = [dict((cur.description[i][0], value) \
-#                for i, value in enumerate(row)) for row in artigos_penais]
-#     return jsonify(artigos_penais_list)
-
-# @app.route('/api/visitas', methods=['GET'])
-# @login_required
-# def get_visitas_api():
-#     conn = get_db()
-#     cur = conn.cursor()
-#     cur.execute("SELECT * FROM Visita")
-#     visitas = cur.fetchall()
-#     visitas_list = [dict((cur.description[i][0], value) \
-#                for i, value in enumerate(row)) for row in visitas]
-#     return jsonify(visitas_list)
+@app.route('/api/policiais', methods=['GET'])
+@login_required
+def get_policiais_api():    
+    conn = get_db()
+    cur = conn.cursor()
+    logging.debug('Buscando policiais registrados no banco de dados...')
+    cur.execute("SELECT * FROM Policial")
+    policiais = cur.fetchall()
+    policiais_list = [dict((cur.description[i][0], value) \
+               for i, value in enumerate(row)) for row in policiais]
+    
+    logging.debug('Enviando ao aplicativo...')
+    return jsonify(policiais_list)
 
 @app.route('/api/syncdata', methods=['GET'])
 def get_all_data_api():
     conn = get_db()
     cur = conn.cursor()
 
+    logging.debug('Buscando dados novos no banco...')
     # Execute all queries in one go
     queries = [
         "SELECT * FROM Pessoa",
@@ -197,8 +146,10 @@ def get_all_data_api():
         all_data[table] = data_list
 
     # Include timestamp in the response
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     all_data["timestamp"] = timestamp
+    
+    logging.debug('Enviando dados...')
 
     return jsonify(all_data)
 
@@ -226,23 +177,59 @@ def update_data():
         new_nome = request.form['nome']
         new_cpf = request.form['cpf']
         new_relevancia = request.form['relevancia']
-        #new_data_fim_liberdade = request.form['data_fim_liberdade']
-        new_endereco = request.form['endereco']
-        new_descricao = request.form['descricao']
+        new_crime_descricao = request.form['crime_descricao']
+
+        # Collect individual address components
+        new_rua = request.form['rua']
+        new_numero = request.form['numero']
+        new_complemento = request.form['complemento']
+        new_cep = request.form['cep']
+        new_estado = request.form['estado']
+        new_municipio = request.form['municipio']
 
         conn = get_db()
         cur = conn.cursor()
+
+        # Fetch id_endereco and id_crime for the given Apenado id
+        cur.execute("""
+            SELECT id_endereco, id_crime
+            FROM Apenado
+            WHERE id = %s
+        """, (id,))
+        apenado_data = cur.fetchone()
+        id_endereco = apenado_data[0]
+        id_crime = apenado_data[1]
+
+        # Update Apenado table
         cur.execute("""
             UPDATE Apenado
-            SET cpf = %s, Relevancia = %s, endereco = %s, descricao = %s
+            SET cpf = %s, Relevancia = %s
             WHERE id = %s
-        """, (new_cpf, new_relevancia, new_endereco, new_descricao, id))
+        """, (new_cpf, new_relevancia, id))
+
+        # Update Pessoa table
         cur.execute("""
             UPDATE Pessoa
             SET nome = %s
             WHERE cpf = %s
         """, (new_nome, new_cpf))
+
+        # Update Endereco table
+        cur.execute("""
+            UPDATE Endereco
+            SET rua = %s, numero = %s, complemento = %s, cep = %s, estado = %s, municipio = %s
+            WHERE id = %s
+        """, (new_rua, new_numero, new_complemento, new_cep, new_estado, new_municipio, id_endereco))
+
+        # Update Crime table
+        cur.execute("""
+            UPDATE Crime
+            SET descricao = %s
+            WHERE id = %s
+        """, (new_crime_descricao, id_crime))
+
         conn.commit()
+        cur.close()
 
         return redirect(url_for('display_data'))
 
@@ -252,27 +239,60 @@ def add_apenado():
     if request.method == 'POST':
         nome = request.form['nome']
         cpf = request.form['cpf']
-        endereco = request.form['endereco']
-        descricao = request.form['descricao']
         relevancia = request.form['relevancia']
-        #data_fim_liberdade = request.form['data_fim_liberdade']
+        
+        # Collect individual address components
+        rua = request.form['rua']
+        numero = request.form['numero']
+        complemento = request.form['complemento']
+        cep = request.form['cep']
+        estado = request.form['estado']
+        municipio = request.form['municipio']
+        
+        # Collect crime details
+        crime_descricao = request.form['crime_descricao']
+        crime_data = request.form['crime_data']
+        # artigo_penal_id = request.form['artigo_penal_id']
 
         conn = get_db()
         cur = conn.cursor()
+
+        # Insert into Pessoa table if not exists
         cur.execute("""
             INSERT INTO Pessoa (cpf, nome)
             SELECT %s, %s
             WHERE NOT EXISTS (SELECT 1 FROM Pessoa WHERE cpf = %s)
         """, (cpf, nome, cpf))
 
+        # Insert into Endereco table
         cur.execute("""
-            INSERT INTO Apenado (cpf, endereco, descricao, Relevancia)
-            SELECT %s, %s, %s, %s
-            WHERE EXISTS (SELECT 1 FROM Pessoa WHERE cpf = %s)
-        """, (cpf, endereco, descricao, relevancia, cpf))
+            INSERT INTO Endereco (rua, numero, complemento, cep, estado, municipio)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """, (rua, numero, complemento, cep, estado, municipio))
+        
+        endereco_id = cur.fetchone()[0]
+
+        # Insert into Crime table
+        cur.execute("""
+            INSERT INTO Crime (data_ocorrido, descricao)
+            VALUES (%s, %s)
+            RETURNING id
+        """, (crime_data, crime_descricao))
+        
+        crime_id = cur.fetchone()[0]
+
+        # Insert into Apenado table
+        cur.execute("""
+            INSERT INTO Apenado (cpf, id_endereco, id_crime, Relevancia)
+            VALUES (%s, %s, %s, %s)
+        """, (cpf, endereco_id, crime_id, relevancia))
+        
         conn.commit()
+        cur.close()
 
         return redirect(url_for('display_data'))
+
     
 @app.route('/api/apenados', methods=['GET'])
 @login_required
@@ -297,23 +317,24 @@ def get_apenados_api():
 def display_data():
     conn = get_db()
     cur = conn.cursor()
+    
     cur.execute("""
-        SELECT Apenado.*, Pessoa.nome
+        SELECT Apenado.*, Pessoa.nome,
+               Endereco.rua, Endereco.numero, Endereco.complemento, Endereco.cep, Endereco.estado, Endereco.municipio,
+               Crime.descricao AS crime_descricao, Crime.data_ocorrido
         FROM Apenado
         INNER JOIN Pessoa ON Apenado.cpf = Pessoa.cpf
+        LEFT JOIN Endereco ON Apenado.id_endereco = Endereco.id
+        LEFT JOIN Crime ON Apenado.id_crime = Crime.id
     """)
-    # cur.execute("""
-    #     SELECT Apenado.*, Pessoa.nome, Endereco.*, Crime.*, ArtigoPenal.descricao as artigo_penal_descricao
-    #     FROM Apenado
-    #     INNER JOIN Pessoa ON Apenado.cpf = Pessoa.cpf
-    #     LEFT JOIN Endereco ON Apenado.id_endereco = Endereco.id
-    #     LEFT JOIN Crime ON Apenado.id_crime = Crime.id
-    #     LEFT JOIN ArtigoPenal ON Crime.id_artigo_penal = ArtigoPenal.id
-    # """)
+    
     apenados = cur.fetchall()
-    apenados_list = [dict((cur.description[i][0], value) \
-               for i, value in enumerate(row)) for row in apenados]
+    cur.close()
+    
+    apenados_list = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in apenados]
+    
     return render_template('gerenciamento.html', apenados=apenados_list)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

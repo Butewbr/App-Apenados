@@ -89,25 +89,28 @@
 										</button>
 									</form>
 								</div>
-								<!-- Inside the modal-body -->
-								<p>
-									<strong>Nome:</strong> {{ apenado['nome'] }}
-								</p>
-								<p>
-									<strong>CPF:</strong> {{ apenado['cpf'] }}
-								</p>
-								<p>
-									<strong>Endereço:</strong> {{
-									apenado['endereco'] }}
-								</p>
-								<p>
-									<strong>Descrição:</strong> {{
-									apenado['descricao'] }}
-								</p>
-								<p>
-									<strong>Nível de Perigo:</strong> {{
-									apenado['relevancia'] }}
-								</p>
+								<div class="apenado">
+									<p>
+										<h2>{{ apenado['nome'] }}</h2>
+									</p>
+									<p><strong>CPF:</strong> {{ apenado['cpf'] }}</p>
+									<p>
+										<strong>Cidade:</strong> {{ apenado['municipio'] }}, {{ apenado['estado'] }}
+									</p>
+									<p>
+										<strong>Endereço:</strong> {{ apenado['rua'] }}, {{ apenado['numero'] }}{% if apenado['complemento'] %}
+										 - {{ apenado['complemento'] }}
+										{% endif %}
+									</p>
+									<p>
+										<strong>CEP:</strong> {{ apenado['cep'] }}
+									</p>
+									<p><strong>Nível de Relevância:</strong> {{ apenado['relevancia'] }}</p>
+									<h3>Crime</h3>
+									<p><strong>Descrição do Crime:</strong> {{ apenado['crime_descricao'] }}</p>
+									<p><strong>Data Ocorrido:</strong> {{ apenado['data_ocorrido'] }}</p>
+								</div>
+								<hr>
 								<form
 									method="POST"
 									action="/update_data"
@@ -148,44 +151,47 @@
                                             readonly
 										/>
 									</div>
+								
 									<div class="form-group">
-										<label for="addressInput"
-											>Endereço:</label
-										>
-										<input
-											type="text"
-											class="form-control"
-											id="addressInput"
-											name="endereco"
-											value="{{ apenado['endereco'] }}"
-										/>
+										<label for="ruaInput">Rua:</label>
+										<input type="text" class="form-control" id="ruaInput" name="rua" value="{{ apenado['rua'] }}"/>
 									</div>
+								
 									<div class="form-group">
-										<label for="descriptionInput"
-											>Descrição:</label
-										>
-										<input
-											type="text"
-											class="form-control"
-											id="descriptionInput"
-											name="descricao"
-											value="{{ apenado['descricao'] }}"
-										/>
+										<label for="numeroInput">Número:</label>
+										<input type="number" class="form-control" id="numeroInput" name="numero" value="{{ apenado['numero'] }}"/>
 									</div>
+								
 									<div class="form-group">
-										<label for="dangerLevelInput"
-											>Nível de Perigo:</label
-										>
-										<input
-											type="number"
-											class="form-control"
-											id="dangerLevelInput"
-											name="relevancia"
-											value="{{ apenado['relevancia'] }}"
-											min="1"
-											max="5"
-										/>
+										<label for="complementoInput">Complemento:</label>
+										<input type="text" class="form-control" id="complementoInput" name="complemento" value="{{ apenado['complemento'] }}" />
 									</div>
+								
+									<div class="form-group">
+										<label for="cepInput">CEP:</label>
+										<input type="number" class="form-control" id="cepInput" name="cep" value="{{ apenado['cep'] }}" />
+									</div>
+								
+									<div class="form-group">
+										<label for="estadoInput">Estado:</label>
+										<input type="text" class="form-control" id="estadoInput" name="estado" value="{{ apenado['estado'] }}" />
+									</div>
+								
+									<div class="form-group">
+										<label for="municipioInput">Município:</label>
+										<input type="text" class="form-control" id="municipioInput" name="municipio" value="{{ apenado['municipio'] }}" />
+									</div>
+									
+									<div class="form-group">
+										<label for="relevanciaInput">Relevância:</label>
+										<input type="number" class="form-control" id="relevanciaInput" name="relevancia" value="{{ apenado['relevancia'] }}" />
+									</div>
+								
+									<div class="form-group">
+										<label for="crimeDescricaoInput">Crime Descrição:</label>
+										<input type="text" class="form-control" id="crimeDescricaoInput" name="crime_descricao" value="{{ apenado['crime_descricao'] }}" />
+									</div>
+									
 									<!-- Add more form fields as needed -->
 									<button
 										type="submit"
@@ -194,15 +200,6 @@
 										Save Changes
 									</button>
 								</form>
-							</div>
-							<div class="modal-footer">
-								<button
-									type="button"
-									class="btn btn-secondary"
-									data-dismiss="modal"
-								>
-									Close
-								</button>
 							</div>
 						</div>
 					</div>
@@ -234,66 +231,67 @@
 							</button>
 						</div>
 						<div class="modal-body">
-							<form method="POST" action="/add_apenado">
+							<form action="{{ url_for('add_apenado') }}" method="POST">
 								<div class="form-group">
-									<label for="fullNameInput"
-										>Nome:</label
-									>
-									<input
-										type="text"
-										class="form-control"
-										id="fullNameInput"
-										name="nome"
-										required
-									/>
+									<label for="nomeInput">Nome:</label>
+									<input type="text" class="form-control" id="nomeInput" name="nome" required />
 								</div>
+								
 								<div class="form-group">
 									<label for="cpfInput">CPF:</label>
-									<input
-										type="text"
-										class="form-control"
-										id="cpfInput"
-										name="cpf"
-										required
-									/>
+									<input type="text" class="form-control" id="cpfInput" name="cpf" required />
 								</div>
+							
 								<div class="form-group">
-									<label for="addressInput">Endereço:</label>
-									<input
-										type="text"
-										class="form-control"
-										id="addressInput"
-										name="endereco"
-										required
-									/>
+									<label for="ruaInput">Rua:</label>
+									<input type="text" class="form-control" id="ruaInput" name="rua" required />
 								</div>
+							
 								<div class="form-group">
-									<label for="descriptionInput"
-										>Descrição:</label
-									>
-									<input
-										type="text"
-										class="form-control"
-										id="descriptionInput"
-										name="descricao"
-										required
-									/>
+									<label for="numeroInput">Número:</label>
+									<input type="number" class="form-control" id="numeroInput" name="numero" required />
 								</div>
+							
 								<div class="form-group">
-									<label for="dangerLevelInput"
-										>Nível de Perigo:</label
-									>
-									<input
-										type="number"
-										class="form-control"
-										id="dangerLevelInput"
-										name="relevancia"
-										required
-										min="1"
-										max="5"
-									/>
+									<label for="complementoInput">Complemento:</label>
+									<input type="text" class="form-control" id="complementoInput" name="complemento" />
 								</div>
-								<!-- Add more form fields as needed -->
+							
+								<div class="form-group">
+									<label for="cepInput">CEP:</label>
+									<input type="number" class="form-control" id="cepInput" name="cep" required />
+								</div>
+							
+								<div class="form-group">
+									<label for="estadoInput">Estado:</label>
+									<input type="text" class="form-control" id="estadoInput" name="estado" required />
+								</div>
+							
+								<div class="form-group">
+									<label for="municipioInput">Município:</label>
+									<input type="text" class="form-control" id="municipioInput" name="municipio" required />
+								</div>
+								
+								<div class="form-group">
+									<label for="relevanciaInput">Relevância:</label>
+									<input type="number" class="form-control" id="relevanciaInput" name="relevancia" required />
+								</div>
+							
+								<div class="form-group">
+									<label for="crimeDescricaoInput">Crime Descrição:</label>
+									<input type="text" class="form-control" id="crimeDescricaoInput" name="crime_descricao" required />
+								</div>
+								
+								<div class="form-group">
+									<label for="crimeDataInput">Crime Data:</label>
+									<input type="date" class="form-control" id="crimeDataInput" name="crime_data" required />
+								</div>
+								
+								<!-- <div class="form-group">
+									<label for="artigoPenalIdInput">Artigo Penal ID:</label>
+									<input type="number" class="form-control" id="artigoPenalIdInput" name="artigo_penal_id" required />
+								</div> -->
+							
 								<button type="submit" class="btn btn-primary">
 									Add Apenado
 								</button>
