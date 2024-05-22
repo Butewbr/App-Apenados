@@ -1,7 +1,19 @@
-import { UserPlus } from 'phosphor-react'
+import {
+  UserPlus,
+  ScanSmiley,
+  PoliceCar,
+  Bell,
+  EnvelopeSimple,
+} from '@phosphor-icons/react'
 import logoPm from '../../assets/pm-white-logo.svg'
 
-import { DashboardLayoutContainer, Aside } from './styles'
+import {
+  DashboardLayoutContainer,
+  Aside,
+  HeaderMenu,
+  AccountStatus,
+  User,
+} from './styles'
 import { Outlet } from 'react-router-dom'
 
 export function DashboardLayout() {
@@ -13,19 +25,19 @@ export function DashboardLayout() {
         <nav>
           <ul>
             <li>
-              <UserPlus size={32} />
+              <UserPlus color="#FFFFFF" size={32} />
               <a href="#">Cadasto de indíviduo</a>
             </li>
             <li>
-              <UserPlus size={32} />
+              <ScanSmiley color="#FFFFFF" size={32} />
               <a href="#">Banco de indíviduos</a>
             </li>
             <li>
-              <UserPlus size={32} />
+              <UserPlus color="#FFFFFF" size={32} />
               <a href="#">Cadasto de PM</a>
             </li>
             <li>
-              <UserPlus size={32} />
+              <PoliceCar color="#FFFFFF" size={32} />
               <a href="#">Banco de PM</a>
             </li>
           </ul>
@@ -33,6 +45,18 @@ export function DashboardLayout() {
       </Aside>
 
       <main>
+        <HeaderMenu>
+          <AccountStatus>
+            <Bell color="#666666" size={32} />
+            <EnvelopeSimple fill="#666666" size={32} />
+          </AccountStatus>
+
+          <User>
+            <span>Super Usuário</span>
+
+            <span>U</span>
+          </User>
+        </HeaderMenu>
         <Outlet />
       </main>
     </DashboardLayoutContainer>

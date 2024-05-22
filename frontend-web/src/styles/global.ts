@@ -35,5 +35,12 @@ export const GlobalStyle = createGlobalStyle`
     display: block;
   }
 
+  ul {
+    list-style: none;
+  }
+  a {
+    text-decoration: none;
+  }
+
 
 `
