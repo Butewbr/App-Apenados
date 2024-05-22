@@ -1,12 +1,16 @@
 import { ThemeProvider } from 'styled-components'
 import { DefaultTheme } from './styles/theme/default'
 import { GlobalStyle } from './styles/global'
-import { LoginPage } from './pages/Login'
+
+import { BrowserRouter } from 'react-router-dom'
+import { Router } from './Routes'
 
 export function App() {
   return (
     <ThemeProvider theme={DefaultTheme}>
-      <LoginPage />
+      <BrowserRouter>
+        <Router />
+      </BrowserRouter>
       <GlobalStyle />
     </ThemeProvider>
   )

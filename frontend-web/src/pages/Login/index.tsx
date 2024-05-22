@@ -10,8 +10,15 @@ import {
 
 import policemanImg from '../../assets/policeman.svg'
 import pmLogo from '../../assets/pm-logo.svg'
+import { useNavigate } from 'react-router-dom'
 
 export function LoginPage() {
+  const navigate = useNavigate()
+
+  function handleLogin() {
+    // fazer a implementação do login, verificar usuário e senha
+    navigate('/dashboard')
+  }
   return (
     <LoginPageContainer>
       <div>
@@ -37,7 +44,7 @@ export function LoginPage() {
 
           <RecoveryPassword href="#">Recuperar senha?</RecoveryPassword>
 
-          <LoginButton>Login</LoginButton>
+          <LoginButton onClick={handleLogin}>Login</LoginButton>
           <img src={pmLogo} alt="" />
         </FormContainer>
         <PoliceManImage src={policemanImg} alt="Policeman" />
