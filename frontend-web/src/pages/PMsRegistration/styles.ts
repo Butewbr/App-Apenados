@@ -43,7 +43,6 @@ export const InformationAcessWrapper = styled.div`
   > div {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
     color: ${(props) => props.theme['gray-300']};
   }
 `
@@ -58,19 +57,6 @@ export const Select = styled.select`
   height: 35px;
   border-radius: 8px;
   border-color: ${(props) => props.theme['green-300']};
-`
-
-export const Textarea = styled.textarea`
-  height: 45px;
-
-  border-radius: 8px;
-  border-color: ${(props) => props.theme['green-300']};
-`
-
-export const CrimeRegistered = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 `
 
 export const ButtonSaveInformation = styled.button`

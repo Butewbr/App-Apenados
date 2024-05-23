@@ -11,14 +11,24 @@ import {
 import policemanImg from '../../assets/policeman.svg'
 import pmLogo from '../../assets/pm-logo.svg'
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 export function LoginPage() {
+  const [password, setPassword] = useState('')
+  const [userName, setUserName] = useState('')
+
   const navigate = useNavigate()
 
   function handleLogin() {
-    // fazer a implementação do login, verificar usuário e senha
-    navigate('/dashboard')
+    if (password === '12345678' && userName === 'pmsystem') {
+      navigate('/dashboard')
+
+      return
+    }
+
+    alert('Usuário ou senha errado, verifique e tente novamente')
   }
+
   return (
     <LoginPageContainer>
       <div>
@@ -29,6 +39,7 @@ export function LoginPage() {
             <FormInput
               type="text"
               id="user"
+              onChange={(e) => setUserName(e.target.value)}
               placeholder="Entre com o seu nome de usuário"
             />
           </div>
@@ -36,8 +47,9 @@ export function LoginPage() {
           <div>
             <FormLabel htmlFor="password">Password</FormLabel>
             <FormInput
-              type="text"
+              type="password"
               id="password"
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Entre com a sua palavra-passe"
             />
           </div>

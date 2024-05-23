@@ -6,29 +6,49 @@ import {
   InformationAcessWrapper,
   Input,
   ButtonSaveInformation,
+  Textarea,
+  CrimeRegistered,
 } from './styles'
 
 export function ConvictsRegistrationPage() {
   return (
     <ConvictsRegistrationContainer>
-      <h1>Cadastro de PMs</h1>
+      <h1>Cadastro de indivíduos</h1>
       <FormContainer>
         <fieldset>
           <FieldsetWrapper>
-            <legend>Informações de acesso</legend>
+            <legend>Informações Penais</legend>
 
             <InformationAcessWrapper>
               <div>
-                <label htmlFor="matricula">Matrícula</label>
-                <Input type="text" id="matricula" />
+                <label htmlFor="vara">Vara</label>
+                <Input type="text" id="vara" />
               </div>
               <div>
-                <label htmlFor="senha">Senha</label>
-                <Input type="password" id="senha" />
+                <label htmlFor="numero-autos">Nº Autos</label>
+                <Input type="number" id="numero-autos" />
               </div>
               <div>
-                <label htmlFor="confirmar-senha">Confirmar senha</label>
-                <Input type="password" id="confirmar-senha" />
+                <label htmlFor="data-inicio">Data Início</label>
+                <Input type="date" id="data-inicio" />
+              </div>
+              <div>
+                <label htmlFor="data-fim">Data Fim</label>
+                <Input type="date" id="data-fim" />
+              </div>
+              <div>
+                <label htmlFor="medida-imposta">Medida Imposta</label>
+                <Textarea id="medida-imposta" />
+              </div>
+
+              <div>
+                <label htmlFor="nome">Situação 1</label>
+
+                <Select id="cargo">
+                  <option value="1">Situação 1</option>
+                  <option value="2">Situação 2</option>
+                  <option value="3">Situação 3</option>
+                </Select>
               </div>
             </InformationAcessWrapper>
           </FieldsetWrapper>
@@ -40,13 +60,10 @@ export function ConvictsRegistrationPage() {
 
             <InformationAcessWrapper>
               <div>
-                <label htmlFor="nome">Nome</label>
+                <label htmlFor="nome">Nome completo</label>
                 <Input type="text" id="nome" />
               </div>
-              <div>
-                <label htmlFor="sobrenome">Sobrenome</label>
-                <Input type="text" id="sobrenome" />
-              </div>
+
               <div>
                 <label htmlFor="cpf">CPF</label>
                 <Input type="number" id="cpf" />
@@ -55,48 +72,92 @@ export function ConvictsRegistrationPage() {
                 <label htmlFor="telefone">Telefone</label>
                 <Input type="tel" id="telefone" />
               </div>
-              <div>
-                <label htmlFor="email">Email</label>
-                <Input type="email" id="email" />
-              </div>
             </InformationAcessWrapper>
           </FieldsetWrapper>
         </fieldset>
 
         <fieldset>
           <FieldsetWrapper>
-            <legend>Dados Profissionais</legend>
+            <legend>Endereço</legend>
 
             <InformationAcessWrapper>
               <div>
-                <label htmlFor="nome">Cargo</label>
+                <label htmlFor="cep">CEP</label>
 
-                <Select id="cargo">
-                  <option value="1">Cargo 1</option>
-                  <option value="2">Cargo 2</option>
-                  <option value="3">Cargo 3</option>
-                </Select>
+                <Input type="number" id="cep" />
               </div>
               <div>
-                <label htmlFor="unidade-policial">Unidade Policial</label>
+                <label htmlFor="estado">Estado</label>
 
-                <Select id="unidade-policial">
-                  <option value="1">Unidade 1</option>
-                  <option value="2">Unidade 2</option>
-                  <option value="3">Unidade 3</option>
-                </Select>
+                <Input type="text" id="estado" />
               </div>
               <div>
-                <label htmlFor="situacao">Situação</label>
+                <label htmlFor="complemento">Complemento</label>
 
-                <Select id="situacao">
-                  <option value="1">situacao 1</option>
-                  <option value="2">situacao 2</option>
-                  <option value="3">situacao 3</option>
-                </Select>
+                <Input type="text" id="complemento" />
+              </div>
+              <div>
+                <label htmlFor="numero">Número</label>
+
+                <Input type="number" id="numero" />
+              </div>
+
+              <div>
+                <label htmlFor="municipio">Munícipio</label>
+
+                <Input type="text" id="municipio" />
+              </div>
+
+              <div>
+                <label htmlFor="logradouro">Logradouro</label>
+
+                <Input type="text" id="logradouro" />
               </div>
             </InformationAcessWrapper>
           </FieldsetWrapper>
+
+          {/* VERIFICAR SE POMOS USAR JÁ UM ENDEREÇO DO BANCO DE DADOS */}
+          {/* <strong>Usar um endereço já cadastrado</strong> */}
+        </fieldset>
+
+        <fieldset>
+          <FieldsetWrapper>
+            <legend>Crimes</legend>
+
+            <InformationAcessWrapper>
+              <div>
+                <label htmlFor="crime">Crime</label>
+
+                <Input type="text" id="crime" />
+              </div>
+              <div>
+                <label htmlFor="relevancia">Relevância</label>
+
+                <Select id="relevancia">
+                  <option value="1">Situação 1</option>
+                  <option value="2">Situação 2</option>
+                  <option value="3">Situação 3</option>
+                </Select>
+              </div>
+            </InformationAcessWrapper>
+
+            <strong>Selecionar Crime já cadastrado</strong>
+            <CrimeRegistered>
+              <label htmlFor="crime-registrado">Crime</label>
+
+              <Select id="crime-registrado">
+                <option value="">
+                  Selecione um crime já cadastrado no banco de dados
+                </option>
+                <option value="1">Situação 1</option>
+                <option value="2">Situação 2</option>
+                <option value="3">Situação 3</option>
+              </Select>
+            </CrimeRegistered>
+          </FieldsetWrapper>
+
+          {/* VERIFICAR SE POMOS USAR JÁ UM ENDEREÇO DO BANCO DE DADOS */}
+          {/* <strong>Usar um endereço já cadastrado</strong> */}
         </fieldset>
 
         <ButtonSaveInformation>SALVAR INFORMAÇÕES</ButtonSaveInformation>

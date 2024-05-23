@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { LoginPage } from './pages/Login'
 import { DashboardLayout } from './layouts/DashboardLayout'
+import { PMsRegistrationPage } from './pages/PMsRegistration'
 import { ConvictsRegistrationPage } from './pages/ConvictsRegistration'
 
 export function Router() {
@@ -9,7 +10,11 @@ export function Router() {
       <Route path="/" element={<LoginPage />} />
 
       <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route path="" element={<ConvictsRegistrationPage />} />
+        <Route path="cadastro-pm" element={<PMsRegistrationPage />} />
+        <Route
+          path="cadastro-apenados"
+          element={<ConvictsRegistrationPage />}
+        />
       </Route>
     </Routes>
   )

@@ -15,7 +15,7 @@ import {
   User,
   Logout,
 } from './styles'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useNavigate } from 'react-router-dom'
 
 export function DashboardLayout() {
   const navigate = useNavigate()
@@ -33,19 +33,21 @@ export function DashboardLayout() {
           <ul>
             <li>
               <UserPlus color="#FFFFFF" size={32} />
-              <a href="#">Cadasto de indíviduo</a>
+              <Link to="/dashboard/cadastro-apenados">
+                Cadasto de indíviduo
+              </Link>
             </li>
             <li>
               <ScanSmiley color="#FFFFFF" size={32} />
-              <a href="#">Banco de indíviduos</a>
+              <Link to="/dashboard/lista-apenados">Banco de indíviduos</Link>
             </li>
             <li>
               <UserPlus color="#FFFFFF" size={32} />
-              <a href="#">Cadasto de PM</a>
+              <Link to="/dashboard/cadastro-pm">Cadasto de PM</Link>
             </li>
             <li>
               <PoliceCar color="#FFFFFF" size={32} />
-              <a href="#">Banco de PM</a>
+              <Link to="/dashboard/lista-pm">Banco de PM</Link>
             </li>
           </ul>
         </nav>
