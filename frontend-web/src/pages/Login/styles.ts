@@ -11,7 +11,8 @@ export const LoginPageContainer = styled.div`
   justify-content: center;
 
   > div {
-    width: 110rem;
+    max-width: 1120px;
+    /* width: 100%; */
 
     background: ${(props) => props.theme.white};
     border-radius: 0.8rem;

@@ -5,6 +5,7 @@ import {
   FieldsetWrapper,
   InformationAcessWrapper,
   Input,
+  ButtonSaveInformation,
 } from './styles'
 
 export function ConvictsRegistrationPage() {
@@ -35,7 +36,7 @@ export function ConvictsRegistrationPage() {
 
         <fieldset>
           <FieldsetWrapper>
-            <legend>Dados Pessoais</legend>
+            <legend>Dados Pessoais e contato</legend>
 
             <InformationAcessWrapper>
               <div>
@@ -48,7 +49,15 @@ export function ConvictsRegistrationPage() {
               </div>
               <div>
                 <label htmlFor="cpf">CPF</label>
-                <Input type="number" id="confirmar-senha" />
+                <Input type="number" id="cpf" />
+              </div>
+              <div>
+                <label htmlFor="telefone">Telefone</label>
+                <Input type="tel" id="telefone" />
+              </div>
+              <div>
+                <label htmlFor="email">Email</label>
+                <Input type="email" id="email" />
               </div>
             </InformationAcessWrapper>
           </FieldsetWrapper>
@@ -69,16 +78,28 @@ export function ConvictsRegistrationPage() {
                 </Select>
               </div>
               <div>
-                <label htmlFor="sobrenome">Sobrenome</label>
-                <Input type="text" id="sobrenome" />
+                <label htmlFor="unidade-policial">Unidade Policial</label>
+
+                <Select id="unidade-policial">
+                  <option value="1">Unidade 1</option>
+                  <option value="2">Unidade 2</option>
+                  <option value="3">Unidade 3</option>
+                </Select>
               </div>
               <div>
-                <label htmlFor="cpf">CPF</label>
-                <Input type="number" id="confirmar-senha" />
+                <label htmlFor="situacao">Situação</label>
+
+                <Select id="situacao">
+                  <option value="1">situacao 1</option>
+                  <option value="2">situacao 2</option>
+                  <option value="3">situacao 3</option>
+                </Select>
               </div>
             </InformationAcessWrapper>
           </FieldsetWrapper>
         </fieldset>
+
+        <ButtonSaveInformation>SALVAR INFORMAÇÕES</ButtonSaveInformation>
       </FormContainer>
     </ConvictsRegistrationContainer>
   )

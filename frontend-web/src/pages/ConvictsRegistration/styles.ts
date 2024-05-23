@@ -50,11 +50,21 @@ export const InformationAcessWrapper = styled.div`
 export const Input = styled.input`
   height: 35px;
   border-radius: 8px;
-  border-color: ${(props) => props.theme['green-300']};
+  border: 1px solid ${(props) => props.theme['green-300']};
 `
 
 export const Select = styled.select`
   height: 35px;
   border-radius: 8px;
   border-color: ${(props) => props.theme['green-300']};
+`
+
+export const ButtonSaveInformation = styled.button`
+  background: ${(props) => props.theme['green-300']};
+  color: ${(props) => props.theme.white};
+  border: none;
+  height: 35px;
+  border-radius: 8px;
+
+  cursor: pointer;
 `

@@ -3,11 +3,15 @@ import styled from 'styled-components'
 export const DashboardLayoutContainer = styled.div`
   display: grid;
   grid-template-columns: 300px 1fr;
+
+  main {
+    padding-bottom: 2rem;
+  }
 `
 
 export const Aside = styled.aside`
   background: ${(props) => props.theme['green-300']};
-  height: 100vh;
+  min-height: 100vh;
 
   padding: 3.2rem;
 
