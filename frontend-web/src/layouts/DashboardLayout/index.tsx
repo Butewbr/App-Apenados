@@ -13,10 +13,17 @@ import {
   HeaderMenu,
   AccountStatus,
   User,
+  Logout,
 } from './styles'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 
 export function DashboardLayout() {
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    navigate('/')
+  }
+
   return (
     <DashboardLayoutContainer>
       <Aside>
@@ -56,6 +63,8 @@ export function DashboardLayout() {
 
             <span>U</span>
           </User>
+
+          <Logout onClick={handleLogout}>Sair</Logout>
         </HeaderMenu>
         <Outlet />
       </main>

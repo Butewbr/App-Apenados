@@ -69,3 +69,17 @@ export const User = styled.div`
     }
   }
 `
+
+export const Logout = styled.button`
+  cursor: pointer;
+  background: ${(props) => props.theme['green-300']};
+  border: none;
+  height: 35px;
+  padding-inline: 2rem;
+  border-radius: 8px;
+  color: ${(props) => props.theme.white};
+
+  &:hover {
+    filter: brightness(0.8);
+  }
+`
