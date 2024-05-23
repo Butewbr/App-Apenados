@@ -1,31 +1,69 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  KeyboardAvoidingView
+  Alert,
+  KeyboardAvoidingView,
+  Keyboard
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable';
 
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {faEye, faEyeSlash} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 export default function Login() {
   const navigation = useNavigation();
   const [matricula, onChangeMat] = useState('');
   const [senha, onChangeSenha] = useState('');
   const [escondeSenha, setEscondeSenha] = useState(true);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  // Mock database for login credentials
+  const mockDatabase = {
+    '123456': 'senha123', // Example matricula and senha
+    // Add more credentials as needed
+  };
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    // Clean up listeners on unmount
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  const handleLogin = () => {
+    // Check if matricula exists in the mock database
+    if (mockDatabase.hasOwnProperty(matricula)) {
+      // Check if senha matches the stored senha for the matricula
+      if (mockDatabase[matricula] === senha) {
+        // Navigate to the next screen on successful login
+        navigation.navigate('Map');
+      } else {
+        // Alert for incorrect senha
+        Alert.alert('Erro', 'Senha incorreta');
+      }
+    } else {
+      // Alert for matricula not found
+      Alert.alert('Erro', 'Matrícula não encontrada');
+    }
+  };
 
   return (
-    <KeyboardAvoidingView style={(style = styles.loginPage)} behavior="height">
-      <Animatable.View
-        style={styles.containerLogin}
-        animation="zoomIn"
-        duration={600}
-        easing="ease-in-out">
+    <KeyboardAvoidingView style={styles.loginPage}>
+      <View
+        style={styles.containerLogin}>
         <Text
           style={{
             fontSize: 30,
@@ -39,23 +77,25 @@ export default function Login() {
         <View style={styles.inputContainer}>
           <Text style={styles.inputText}>Matrícula</Text>
           <TextInput
-            multiline
             style={styles.inputInfo}
             placeholder="Entre com a sua matrícula"
             placeholderTextColor="#C0BDBD"
             onChangeText={onChangeMat}
-            value={matricula}></TextInput>
+            value={matricula}
+          />
         </View>
 
         <View style={styles.inputContainer}>
           <Text style={styles.inputText}>Senha</Text>
           <View style={styles.inputInfo}>
             <TextInput
+              style={styles.passwordInput}
               placeholder="Entre com sua senha"
               placeholderTextColor="#C0BDBD"
               onChangeText={senha => onChangeSenha(senha)}
               value={senha}
-              secureTextEntry={escondeSenha}></TextInput>
+              secureTextEntry={escondeSenha}
+            />
             {escondeSenha ? (
               <TouchableOpacity onPress={() => setEscondeSenha(!escondeSenha)}>
                 <FontAwesomeIcon icon={faEye} color="#73BA96" size={25} />
@@ -71,7 +111,7 @@ export default function Login() {
         <TouchableOpacity
           style={styles.submitButton}
           activeOpacity={0.7}
-          onPress={() => navigation.navigate('Map')}>
+          onPress={handleLogin}>
           <Text
             style={{
               color: '#FFFFFF',
@@ -81,20 +121,15 @@ export default function Login() {
             LOGIN
           </Text>
         </TouchableOpacity>
-      </Animatable.View>
+      </View>
 
-      <KeyboardAvoidingView
-        style={{width: '100%', height: 20, flex: 1, overflow: 'hidden'}}
-        behavior="height">
-        <View>
-          <Animatable.Image
-            source={require('../../../../assets/imagem_logo.png')}
-            style={{width: '100%', height: '100%'}}
-            resizeMode="contain"
-            animation="zoomIn"
-          />
-        </View>
-      </KeyboardAvoidingView>
+      {!isKeyboardVisible && (
+        <Animatable.Image
+          source={require('../../../../assets/imagem_logo.png')}
+          style={{ flex: 1, width: '100%', height: 20, resizeMode: 'contain' }}
+          resizeMode="contain"
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -104,22 +139,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#73BA96',
     alignItems: 'center',
-    paddingHorizontal: '10%'
+    color: '#26117A',
+    paddingHorizontal: '5%'
   },
   containerLogin: {
-    flex: 2,
-    maxHeight: '55%',
-    marginTop: '30%',
+    flex: 1,
+    marginTop: '20%',
+    color: '#26117A',
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     width: '100%',
     padding: '5%',
     shadowOpacity: 1,
     shadowRadius: 4,
-    elevation: 10
+    elevation: 10,
+    height: '100%'
   },
   inputContainer: {
     alignItems: 'flex-start',
+    color: '#26117A',
     marginTop: '5%'
   },
   inputText: {
@@ -130,6 +168,7 @@ const styles = StyleSheet.create({
   },
   inputInfo: {
     flexDirection: 'row',
+    color: '#26117A',
     borderWidth: 2,
     borderRadius: 25,
     borderColor: '#73BA96',
@@ -138,15 +177,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: '5%'
   },
+  passwordInput: {
+    color: '#26117A',
+    flex: 1
+  },
   submitButton: {
     backgroundColor: '#73BA96',
     borderRadius: 15,
     marginTop: '20%',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '6%',
     shadowOpacity: 1,
     shadowRadius: 4,
-    elevation: 10
+    elevation: 10,
+    flex: 1
   }
 });
