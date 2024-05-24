@@ -15,7 +15,7 @@ import axios from 'axios';
 import * as Animatable from 'react-native-animatable';
 
 const api = axios.create({
-  baseURL: 'http://10.0.2.2:3000/'
+  baseURL: 'http://172.30.80.1:3000/'
 });
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -78,10 +78,18 @@ export default function Map() {
       setLocationAccess(null);
       setCenterPoint(null);
     }
+    function getApVisPessoa() {
+      api
+        .get(`/ap-vis-pessoa/`)
+        .then(response => 
+          setEndereco(response.data))
+        .catch(error => console.log(error.toJSON()));
+    }
 
     function fetchData() {
         console.log("FETCHING DATA!");
-          axios.get('http://192.168.169.29:5000/api/syncdata')
+        getApVisPessoa()
+          axios.get('http://172.30.80.1:5000/api/syncdata')
         .then(response => {
           // Handle success
           console.log(response.data);
@@ -117,11 +125,20 @@ export default function Map() {
     }, []);
   
     useEffect(() => {
-      api
-        .get(`/ap-vis-pessoa/`)
-        .then(response => setEndereco(response.data))
-        .catch(error => console.log(error.toJSON()));
+      getApVisPessoa()
     }, []);
+
+    function handleSubmitVisita(id: any): void {
+      api.post(`/registro-visita/${id}`, { observacao })
+        .then(response => {
+          // handle success
+          console.log(response.data);
+        })
+        .catch(error => {
+          // handle error
+          console.log(error);
+        });
+    }
 
     return (
       <View style={styles.page}>
@@ -139,7 +156,7 @@ export default function Map() {
             followUserLocation={centerPoint ? true : false}
             defaultSettings={{
               centerCoordinate: [-49.48226570746353, -28.933063538181845],
-              zoomLevel: 18
+              zoomLevel: 10
             }}
           />
           {endereco.map((p: any) => (
@@ -397,7 +414,8 @@ export default function Map() {
                   fontSize: 16,
                   fontWeight: 700,
                   alignSelf: 'center',
-                  marginVertical: 12
+                  marginVertical: 12,
+                  color: '#26117A'
                 }}>
                 O Indivíduo estava em casa?
               </Text>
@@ -628,7 +646,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF',
     borderRadius: 25,
-    margin: 17
+    margin: 17,
+    color: '#000'
   },
   sendBtn: {
     flex: 1,

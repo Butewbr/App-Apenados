@@ -175,7 +175,8 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: '5%'
+    paddingHorizontal: '5%',
+    color: '#000000'
   },
   passwordInput: {
     color: '#26117A',

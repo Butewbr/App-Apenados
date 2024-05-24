@@ -66,18 +66,19 @@ routes.post('/alt-penal', async (req, res) => {
     const result = await pool.query(query_look, [cpf]);
     if (result.rows.length === 0) {
       const query_ins_pessoa =
-        'INSERT INTO "Pessoa" (nome, relevancia, tel_ddi, tel_ddd, tel_num) VALUES ($1, $2, $3, $4, $5)';
+      'INSERT INTO "Pessoa" (nome, relevancia, cpf, tel_ddi, tel_ddd, tel_num) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
       const result_pessoa = await pool.query(query_ins_pessoa, [
-        nome,
-        relevancia,
-        tel_ddi,
-        tel_ddd,
-        tel_num
+      nome,
+      relevancia,
+      cpf,
+      tel_ddi,
+      tel_ddd,
+      tel_num
       ]);
       if (result_pessoa.rows.length === 0) {
-        throw new Error('Erro ao cadastrar pessoa');
+      throw new Error('Erro ao cadastrar pessoa');
       } else {
-        id_pessoa = result_pessoa.rows[0].id;
+      id_pessoa = result_pessoa.rows[0].id;
       }
     } else {
       id_pessoa = Number(result.rows[0].id);
