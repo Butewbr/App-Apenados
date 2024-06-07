@@ -1,28 +1,17 @@
 # Ronda Penal - Versão 2024
 
-# 1.	Proposta de solução geral
+# Introdução
 
-A proposta de solução geral para o sistema de gerenciamento de apenados visa oferecer uma solução abrangente e eficiente para atender às demandas operacionais das forças policiais. Para isso, será desenvolvido um aplicativo móvel para uso dos policiais da viatura, onde será possível registrar as visitas e acessar o mapa da cidade. Nesse mapa, será possível visualizar a localização dos apenados, juntamente com seu grau de perigo.
+ Este relatório aborda o processo de desenvolvimento de um sistema de gerenciamento de apenados, projetado para atender às necessidades operacionais dos policiais da cidade de Araranguá. O sistema foi concebido para oferecer uma plataforma eficiente para o registro, monitoramento e administração de informações cruciais relacionadas aos apenados em liberdade condicional.
+ A necessidade de um sistema integrado surgiu da demanda por uma abordagem mais eficaz e automatizada na gestão de dados relevantes para as atividades policiais. Através deste sistema, os policiais podem acessar informações atualizadas sobre apenados, visualizar mapas com a localização dos mesmos e registrar visitas de forma organizada e segura.
+ A proposta de solução geral para o sistema de gerenciamento de apenados visa oferecer uma solução abrangente e eficiente para atender às demandas operacionais das forças policiais. Para isso, será desenvolvido um aplicativo móvel para uso dos policiais da viatura, onde será possível registrar as visitas e acessar o mapa da cidade. Nesse mapa, será possível visualizar a localização dos apenados, juntamente com seu grau de perigo.
+ O aplicativo contará com autenticação e não terá acesso à internet, sendo abastecido com informações de um servidor localizado no quartel da polícia, onde será possível incluir, excluir e atualizar os dados de policiais e apenados. Como o aplicativo não terá acesso à internet, os dados serão atualizados apenas quando a viatura retornar ao quartel, garantindo assim a segurança e robustez do sistema como um todo.
 
-O aplicativo contará com autenticação e não terá acesso à internet, sendo abastecido com informações de um servidor localizado no quartel da polícia, onde será possível incluir, excluir e atualizar os dados de policiais e apenados. Como o aplicativo não terá acesso à internet, os dados serão atualizados apenas quando a viatura retornar ao quartel, garantindo assim a segurança e robustez do sistema como um todo.
+<hr>
 
+# Requisitos do Sistema
 
-# 2. Histórias
-
-**1**	- Como policial, preciso me autenticar para poder acessar os dados do servidor
-
-**2**	- Como policial, desejo visualizar um mapa da região em tempo real no aplicativo móvel, com os marcadores de todos os apenados.
-
-**3**	- Como policial, quero poder clicar em um marcador no mapa para acessar imediatamente o perfil completo do suspeito cadastrado
-naquela localização, incluindo detalhes do apenado.
-
-**4**	- Como administrador do sistema, desejo ter a capacidade de atualizar, adicionar e modificar as informações dos suspeitos e policiais cadastrados.
-
-**5**	- Como policial, quero poder registrar a data, hora e motivo de uma visita, juntamente com quaisquer observações relevantes.
-
-**6**	Como policial, desejo receber alertas no aplicativo móvel quando estiver me aproximando da localização de um apenado que não recebeu uma visita recente.
-
-# 3.1 Requisitos Funcionais
+## Requisitos Funcionais
 **RF_01** -	O sistema deve permitir que os policiais se autentiquem com suas credenciais de usuário para acessar as informações disponíveis.
 
 **RF_02**	- O sistema deve permitir que os policiais cadastrem e visualizem as informações das pessoas em liberdade condicional.
@@ -35,7 +24,7 @@ naquela localização, incluindo detalhes do apenado.
 
 **RF_06**	- O aplicativo deve permitir que os policiais registrem as visitas aos apenados.
 
-# 3.2 Requisitos Não-Funcionais
+## Requisitos Não-Funcionais
 
 **RNF_01** -	O sistema deve garantir a segurança dos dados dos apenados, permitindo acesso apenas aos policiais autenticados.
 
@@ -47,7 +36,7 @@ naquela localização, incluindo detalhes do apenado.
 
 **RNF_05** - O sistema deve ser estável para estar disponível todos os dias da semana, pois os policiais podem precisar a qualquer momento.
 
-# 3.3 Regras de Negócio
+## Regras de Negócio
 
 **RN_01**	- O aplicativo deve garantir que os dados sejam sincronizados com o servidor para sempre manter as informações atualizadas.
 
@@ -55,7 +44,11 @@ naquela localização, incluindo detalhes do apenado.
 
 **RN_03**	- Para garantir a segurança de dados, o sistema deve permitir que apenas policias autorizados e administradores tenham acesso as informações dos apenados.
 
-# 4.1 Diagrama de Caso de Uso
+<hr>
+
+# Diagramas
+
+## Diagrama de Caso de Uso
 
 O diagrama de caso de uso representa as funcionalidades do sistema e como ele interage com diferentes tipos de usuários, neste caso, o Administrador e o Policial. 
 
@@ -86,9 +79,9 @@ Este diagrama de caso de uso fornece um resumo visual de alto nível das funcion
   <img src='https://github.com/Butewbr/App-Apenados/assets/113950309/08924646-aca4-40b5-811f-cae50d03d6bc' style="width: 500px;">
 </center>
 
-<small>Figura 1: Diagrama de Caso de Uso para o projeto da Ronda Penal..</small>
+<small>Figura 1: Diagrama de Caso de Uso.</small>
 
-#	4.2 Diagrama de Classe
+##	Diagrama de Classe
 
 É uma representação da estrutura e relações das classes que servem de modelo para objetos.
 
@@ -106,9 +99,9 @@ Nosso sistema, terá a classe: Servidor, Policial, Apenado, Aplicativo e Mapa.
   <img src='https://github.com/Butewbr/App-Apenados/assets/113950309/e36871b9-1d28-4f75-8e1d-cad1b5226e9f' style="width: 500px;">
 </center>
 
-<small>Figura 2: Diagrama de Classe para o projeto da Ronda Penal.</small>
+<small>Figura 2: Diagrama de Classe.</small>
 
-# 4.3	Modelo de Dados
+## Modelo de Dados
 
 O modelo de dados é uma representação visual dos elementos e suas conexões. As nossas entidades são Pessoa, Policial, Endereco, ArtigoPenal. Crime, Apenado e Visita. Assim, conseguindo que nosso sistema funcione de maneira eficiente.
 
@@ -130,9 +123,11 @@ O modelo de dados é uma representação visual dos elementos e suas conexões. 
   <img src='https://github.com/Butewbr/App-Apenados/assets/113950309/18635732-6697-4d0c-8863-8d0a4789095b' style="width: 500px;">
 </center>
 
-<small>Figura 3: Modelo de dados para o projeto da Ronda Penal.</small>
+<small>Figura 3: Modelo de dados.</small>
 
-# 5.	Tecnologias Utilizadas
+<hr>
+
+# Tecnologias Utilizadas
 
 O desenvolvimento do projeto envolveu o uso de várias tecnologias modernas e poderosas. Abaixo, é descrito cada uma dessas tecnologias e como elas foram empregadas no projeto:
 
@@ -146,10 +141,12 @@ O desenvolvimento do projeto envolveu o uso de várias tecnologias modernas e po
 
 **GitHub:** Utilizamos o GitHub para colaboração no desenvolvimento do projeto. O GitHub oferece controle de versão e facilita a colaboração entre os membros da equipe, permitindo que todos trabalhem em conjunto de forma organizada e eficiente. Além disso, o GitHub também foi usado para hospedar o código-fonte do projeto, permitindo que seja acessível e disponível para todos os membros da equipe.
 
+<hr>
 
-# 6.	Conclusão
+# Instruções de execução
 
-Em andamento.
+
+
 
 
 
