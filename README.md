@@ -166,6 +166,10 @@ npm install
 ```
 npm run app:start
 ```
+- Rodar o Servidor
+
+```
+./run.sh
 
 
 
