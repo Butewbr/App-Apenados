@@ -3,8 +3,11 @@
 # Introdução
 
  Este relatório aborda o processo de desenvolvimento de um sistema de gerenciamento de apenados, projetado para atender às necessidades operacionais dos policiais da cidade de Araranguá. O sistema foi concebido para oferecer uma plataforma eficiente para o registro, monitoramento e administração de informações cruciais relacionadas aos apenados em liberdade condicional.
+ 
  A necessidade de um sistema integrado surgiu da demanda por uma abordagem mais eficaz e automatizada na gestão de dados relevantes para as atividades policiais. Através deste sistema, os policiais podem acessar informações atualizadas sobre apenados, visualizar mapas com a localização dos mesmos e registrar visitas de forma organizada e segura.
+ 
  A proposta de solução geral para o sistema de gerenciamento de apenados visa oferecer uma solução abrangente e eficiente para atender às demandas operacionais das forças policiais. Para isso, será desenvolvido um aplicativo móvel para uso dos policiais da viatura, onde será possível registrar as visitas e acessar o mapa da cidade. Nesse mapa, será possível visualizar a localização dos apenados, juntamente com seu grau de perigo.
+ 
  O aplicativo contará com autenticação e não terá acesso à internet, sendo abastecido com informações de um servidor localizado no quartel da polícia, onde será possível incluir, excluir e atualizar os dados de policiais e apenados. Como o aplicativo não terá acesso à internet, os dados serão atualizados apenas quando a viatura retornar ao quartel, garantindo assim a segurança e robustez do sistema como um todo.
 
 <hr>
