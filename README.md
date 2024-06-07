@@ -145,6 +145,25 @@ O desenvolvimento do projeto envolveu o uso de várias tecnologias modernas e po
 
 # Instruções de execução
 
+- Clonar o repositório:
+
+```
+git clone https://github.com/Butewbr/App-Apenados
+```
+
+- Instalar as dependencias:
+
+```
+npm install
+yarn install
+```
+
+- Rodar o Aplicativo:
+
+```
+cd 2023
+npm run app:start
+```
 
 
 
