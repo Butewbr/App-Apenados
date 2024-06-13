@@ -150,29 +150,36 @@ O desenvolvimento do projeto envolveu o uso de várias tecnologias modernas e po
 
 - Clonar o repositório:
 
-```
+```bash
 git clone https://github.com/Butewbr/App-Apenados
 cd 2023
 ```
 
 - Instalar as dependencias:
 
-```
+```bash
 npm install
 ```
 
 - Rodar o Aplicativo:
 
-```
+```bash
 npm run app:start
 ```
 - Rodar o Servidor
+Para rodar o servidor no _Linux_, acesse o diretório base do projeto e rode o comando
 
-```
+```bash
 ./run.sh
+```
 
+Para o Windows, basta rodar os dois comandos em sequência:
 
+```bash
+docker compose build
 
+docker compose up
+```
 
 
 
