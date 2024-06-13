@@ -7,7 +7,8 @@ import {
   LogBox,
   Modal,
   Image,
-  TextInput
+  TextInput,
+  Alert
 } from 'react-native';
 import MapLibreGL, { Logger } from '@maplibre/maplibre-react-native';
 import Geolocation from '@react-native-community/geolocation';
@@ -15,7 +16,7 @@ import axios from 'axios';
 import * as Animatable from 'react-native-animatable';
 
 const api = axios.create({
-  baseURL: 'http://172.30.80.1:3000/'
+  baseURL: 'http://192.168.202.29:3000/'
 });
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -89,16 +90,37 @@ export default function Map() {
     function fetchData() {
         console.log("FETCHING DATA!");
         getApVisPessoa()
-          axios.get('http://172.30.80.1:5000/api/syncdata')
-        .then(response => {
-          // Handle success
-          console.log(response.data);
-          // You can set the response data to state or do something else with it here
-        })
-        .catch(error => {
-          // Handle error
-          console.error('Error fetching data:', error);
-        });
+      const dataToSend = {
+        observacao: "Observation text",
+        id_endereco: 1,
+        matricula_policial: "123456",
+        id_apenado: 2,
+        data_visita: "2024-06-13"
+      };
+  
+      // First, get the data from the server
+      axios.get('http://192.168.202.29:5000/api/syncdata')
+          .then(response => {
+              // Handle success
+              console.log(response.data);
+              Alert.alert('Success', 'Data synchronized successfully');
+              // Now send data to the server
+              axios.post('http://192.168.202.29:5000/api/sync_visits', dataToSend)
+                  .then(postResponse => {
+                      console.log('Data sent successfully:', postResponse.data);
+                      Alert.alert('Success', 'Data sent successfully');
+                  })
+                  .catch(postError => {
+                      console.error('Error sending data:', postError);
+                      Alert.alert('Error', 'Failed to send data');
+                  });
+          })
+          .catch(error => {
+              // Handle error
+              console.error('Error fetching data:', error);
+              Alert.alert('Error', 'Failed to fetch data');
+          });
+
     }
 
     function centratePoint() {

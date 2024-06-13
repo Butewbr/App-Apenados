@@ -168,6 +168,27 @@ def delete_apenado():
         conn.commit()
 
         return redirect(url_for('display_data'))
+    
+@app.route('/api/sync_visits', methods=['POST'])
+def sync_visits():
+    if request.method == 'POST':
+        logging.debug("Dados de visita recebidos!")
+        
+        data = request.get_json()
+
+        conn = get_db()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            INSERT INTO Visita (observacao, id_endereco, matricula_policial, id_apenado, data_visita)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (data['observacao'], data['id_endereco'], data['matricula_policial'], data['id_apenado'], data['data_visita']))
+        
+        conn.commit()
+
+        return redirect(url_for('display_data'))
+    else:
+        return redirect(url_for('/'))
 
 @app.route('/update_data', methods=['POST'])
 @login_required

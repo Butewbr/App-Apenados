@@ -48,5 +48,6 @@ CREATE TABLE Visita (
     observacao VARCHAR(1000) NOT NULL,
     id_endereco INT REFERENCES Endereco(id),
     matricula_policial VARCHAR(50) REFERENCES Policial(matricula),
-    id_apenado INT REFERENCES Apenado(id)
+    id_apenado INT REFERENCES Apenado(id),
+    data_visita DATE
 );
