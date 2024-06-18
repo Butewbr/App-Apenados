@@ -3,6 +3,7 @@ import { LoginPage } from './pages/Login'
 import { DashboardLayout } from './layouts/DashboardLayout'
 import { PMsRegistrationPage } from './pages/PMsRegistration'
 import { ConvictsRegistrationPage } from './pages/ConvictsRegistration'
+import { ConvictsDatasPage } from './pages/ConvictsDatas/indext'
 
 export function Router() {
   return (
@@ -15,6 +16,7 @@ export function Router() {
           path="cadastro-apenados"
           element={<ConvictsRegistrationPage />}
         />
+        <Route path="lista-apenados" element={<ConvictsDatasPage />} />
       </Route>
     </Routes>
   )
