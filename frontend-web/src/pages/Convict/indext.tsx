@@ -1,6 +1,10 @@
 
 import { ArrowLeft } from 'phosphor-react'
 import { useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { ConvictContext, useConvict } from '../../context/ConvictContext'
+import { useContext } from 'react'
+
 import { ConvictContainer, ConvictDetailsContainer, CrimesContainer, ImposedMeasureContainer, ProfileInfo, Relevance, StatusAndRelevanceContainer, VisitsObsContainer,  } from './styles'
 
 export function ConvictPage() {
@@ -8,6 +12,25 @@ export function ConvictPage() {
 
   const handleBack = (id:any) => {
     navigate(`/dashboard/lista-apenados`)
+  }
+
+
+  const { id } = useParams<{ id: string }>()
+  const { apenados } = useContext(ConvictContext)
+
+  console.log({
+    id, apenados
+  })
+
+  const apenado = apenados.find((a, idx) => {
+    if (idx === Number(id)){
+      return a
+    }
+  })
+  console.log("==>", apenado)
+
+  if (!apenado) {
+    return <div>Apenado não encontrado</div>
   }
 
   return (
@@ -27,10 +50,10 @@ export function ConvictPage() {
 
         <ProfileInfo>
 
-          <img src="https://github.com/Futila.png" alt="" />
+          <img src={apenado.foto} alt="" />
 
           <div>
-            <h1>Willian Carlos Pereira </h1><br />
+            <h1>{apenado.nome} </h1><br />
             <span>Rua dos Condenados, 001 - Jardim das Avenidas</span><br />
             <span>CEP: 88906-660, Araranguá - Santa Catarina</span>
           </div>
@@ -41,11 +64,11 @@ export function ConvictPage() {
        <StatusAndRelevanceContainer>
         <div>
           <p>
-            <strong>STATUS:</strong> <span>ATIVO</span>
+            <strong>STATUS:</strong> <span>{apenado.situacao}</span>
           </p>
 
-          <p><strong>Início de Pena:</strong> 01/01/2023</p>
-          <p><strong>Fim de Pena:</strong> 01/01/2123</p>
+          <p><strong>Início de Pena:</strong> {apenado.dataInicio}</p>
+          <p><strong>Fim de Pena:</strong> {apenado.dataFim}</p>
         </div>
 
         <Relevance>
@@ -65,8 +88,7 @@ export function ConvictPage() {
         </header>
 
         <p>
-        Willian Carlos Pereira, condenado por chefiar uma quadrilha e praticar estelionato, recebeu liberdade condicional com restrições. Ele deve residir na Rua dos Condenados, 001 - Jardim das Avenidas, Araranguá, Santa Catarina, e recolher-se das 20:00 às 06:00. O sentenciado tem permissão para trabalhar, comprovando sua ocupação, e pode sair por até 4 horas diárias, mediante autorização prévia, para atividades essenciais. É obrigado a manter contato regular com seu agente de condicional. O descumprimento resultará na revogação da condicional.
-
+          {apenado.medidaImposta}
         </p>
        </ImposedMeasureContainer>
        <CrimesContainer>
@@ -75,9 +97,11 @@ export function ConvictPage() {
         </header>
 
         <ul>
-          <li>Chefe de Quadrilha</li>
-          <li>Estelionato</li>
-          <li>Tráfico de Armas</li>
+
+          {apenado.crimes.map((crime) => (
+            <li key={crime}>{crime}</li>
+          ))}
+          
         </ul>
        </CrimesContainer>
        <VisitsObsContainer>
@@ -87,8 +111,9 @@ export function ConvictPage() {
 
       
         <ul>
-          <li>19/02/2023 - As 21:30 do dia em questão, não se encontrava em sua residência.</li>
-        
+        {apenado.observacoesVisita.map((obs) => (
+            <li key={obs}>{obs}</li>
+          ))}        
         </ul>
        </VisitsObsContainer>
 
