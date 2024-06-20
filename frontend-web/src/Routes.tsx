@@ -4,6 +4,7 @@ import { DashboardLayout } from './layouts/DashboardLayout'
 import { PMsRegistrationPage } from './pages/PMsRegistration'
 import { ConvictsRegistrationPage } from './pages/ConvictsRegistration'
 import { ConvictsDatasPage } from './pages/ConvictsDatas/indext'
+import { ConvictPage } from './pages/Convict/indext'
 
 export function Router() {
   return (
@@ -17,6 +18,7 @@ export function Router() {
           element={<ConvictsRegistrationPage />}
         />
         <Route path="lista-apenados" element={<ConvictsDatasPage />} />
+        <Route path="lista-apenados/:id" element={<ConvictPage />} />
       </Route>
     </Routes>
   )

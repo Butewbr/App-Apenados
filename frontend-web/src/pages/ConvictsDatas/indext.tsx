@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ConvictsDatasContainer, FormContainer, Pagination } from './styles'
 
 export function ConvictsDatasPage() {
@@ -168,7 +169,7 @@ export function ConvictsDatasPage() {
   const [busca, setBusca] = useState('')
   const [paginaAtual, setPaginaAtual] = useState(1)
   const [itensPorPagina, setItensPorPagina] = useState(5)
-
+  const navigate = useNavigate()
   const handleBuscaChange = (event) => {
     setBusca(event.target.value)
   }
@@ -195,6 +196,11 @@ export function ConvictsDatasPage() {
   )
 
   const totalPaginas = Math.ceil(apenadosFiltrados.length / itensPorPagina)
+
+
+  const handleRowClick = (id:any) => {
+    navigate(`/dashboard/lista-apenados/${id}`)
+  }
   return (
     <ConvictsDatasContainer>
       <h1>Indivíduos</h1>
@@ -237,7 +243,7 @@ export function ConvictsDatasPage() {
           </thead>
           <tbody>
             {apenadosPaginados.map((apenado, index) => (
-              <tr key={index}>
+              <tr key={index} onClick={() => handleRowClick(index)} style={{cursor: 'pointer'}} >
                 <td>{apenado.nome}</td>
                 <td>{apenado.endereco}</td>
                 <td>{apenado.relevancia}</td>
