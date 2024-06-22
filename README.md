@@ -231,7 +231,7 @@ Bom, como possíveis erros, podemos citar:
 
 Caso ainda não funcione, outra alternativa é instalar a extensão do React Native Tools no Visual Studio Code, que pode ser encontrada no link: [msjsdiag.vscode-react-native](https://marketplace.visualstudio.com/items?itemName=msjsdiag.vscode-react-native)
 
-Após a instalação, basta apertar em `ctrl + shift + d` e alterar o start debugging para `Debug Android Hermes` e clicar em `F5`. Isso deve resolver o problema de execução do aplicativo.
+Após a instalação, basta apertar em `ctrl + shift + d`, alterar o start debugging para `Debug Android Hermes` e clicar em `F5`. Isso deve resolver o problema de execução do aplicativo.
 
 <hr>
 
