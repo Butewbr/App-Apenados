@@ -14,6 +14,7 @@ import MapLibreGL, { Logger } from '@maplibre/maplibre-react-native';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 import * as Animatable from 'react-native-animatable';
+import { useNavigation } from '@react-navigation/native';
 
 const api = axios.create({
   baseURL: 'http://192.168.202.29:3000/'
@@ -162,12 +163,23 @@ export default function Map() {
         });
     }
 
+    const navigation = useNavigation();
+    const handlePress = () => {
+      navigation.goBack();
+    };
+
     return (
       <View style={styles.page}>
-        <Image
-          source={require('../../../../assets/brasao.png')}
-          style={styles.mapImage}
-        />
+        <TouchableOpacity style={styles.backButton} onPress={handlePress}>
+          <Image
+            source={require('../../../../assets/brasao.png')}
+            style={styles.mapImage}
+          />
+          <View style={styles.rectangle}>
+            <Text style={styles.helloText}>ROBERT</Text>
+            <Text style={styles.welcomeText}>Clique para sair</Text>
+          </View>
+        </TouchableOpacity>
         <MapLibreGL.MapView
           contentInset={[0, 0, 0, 0]}
           style={styles.map}
@@ -511,8 +523,8 @@ const styles = StyleSheet.create({
   },
   centerButton: {
     position: 'absolute',
-    top: 120,
-    right: 20,
+    top: "9%",
+    right: "5%",
     borderRadius: 0.5
   },
   button: {
@@ -527,8 +539,8 @@ const styles = StyleSheet.create({
   },
   syncButtonContainer: {
     position: 'absolute',
-    top: 60,
-    right: 20,
+    top: '2%',
+    right: "5%",
     borderRadius: 0.5
   },
   roundButton: {
@@ -690,5 +702,42 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 18
-  }
+  },
+  backButton: {
+    position: 'absolute',
+    zIndex: 2,
+    resizeMode: 'contain',
+    top: '2%',
+    start: '2%',
+  },
+  rectangle: {
+    zIndex: 2,
+    resizeMode: 'contain',
+    // maxWidth: '30%',
+    maxHeight: '95%',
+    top: '4%',
+    start: '5%',
+    backgroundColor: '#FFFFFFE0',
+    paddingRight: 5,
+    paddingVertical: 10,
+    borderRadius: 26,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  helloText: {
+    fontSize: 14,
+    marginLeft: "30%",
+    color: "#000",
+    fontWeight: 'bold',
+    textAlign: "left",
+  },
+  welcomeText: {
+    fontSize: 12,
+    color: "#000",
+    marginLeft: "30%",
+    textAlign: "left",
+  },
 });
