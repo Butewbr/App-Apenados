@@ -8,7 +8,8 @@ import {
   Modal,
   Image,
   TextInput,
-  Alert
+  Alert,
+  ScrollView
 } from 'react-native';
 import MapLibreGL, { Logger } from '@maplibre/maplibre-react-native';
 import Geolocation from '@react-native-community/geolocation';
@@ -34,7 +35,8 @@ import {
   faLocationPin,
   faLocationDot,
   faArrowsToDot,
-  faArrowsToCircle
+  faArrowsToCircle,
+  faList
 } from '@fortawesome/free-solid-svg-icons';
 
 LogBox.ignoreLogs(['Warning: ...']);
@@ -55,145 +57,259 @@ Logger.setLogCallback(log => {
   return false;
 });
 
+const haversineDistance = (coords1, coords2) => {
+  const toRad = (x) => (x * Math.PI) / 180;
+  const R = 6371; // Earth's radius in km
+
+  const dLat = toRad(coords2.latitude - coords1.latitude);
+  const dLon = toRad(coords2.longitude - coords1.longitude);
+  const lat1 = toRad(coords1.latitude);
+  const lat2 = toRad(coords2.latitude);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+};
+
 export default function Map() {
   const [centerPoint, setCenterPoint] = useState<number | null>(null);
   const [locationAccess, setLocationAccess] = useState<number | null>(null);
   const [endereco, setEndereco] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [listModalVisible, setListModalVisible] = useState(false);
   const [visitaVisible, setVisitaVisible] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [observacao, setObservacao] = useState('');
+  const [userLocation, setUserLocation] = useState(null);
 
-  {
-    function watchPosition() {
-      Geolocation.requestAuthorization(
-        () => {
-          setLocationAccess(1);
-          setCenterPoint(1);
-        },
-        () => setLocationAccess(0)
-      );
-    }
+  useEffect(() => {
+    setEndereco([
+      {
+        id: 1,
+        id_pessoa: 1,
+        nome: "Gabriel",
+        relevancia: 1,
+        data_ins: "2023-01-01",
+        data_at: "2024-01-01",
+        logradouro: "Rua 1",
+        numero: "123",
+        complemento: "Apto 1",
+        cep: "88900-001",
+        municipio: "Araranguá",
+        estado: "SC",
+        crimes: ["Crime 1"],
+        medida_imposta: "Medida 1",
+        info_geo: {
+          coordinates: [-49.47326570746353, -28.935063538181845]
+        }
+      },
+      {
+        id: 2,
+        id_pessoa: 2,
+        nome: "Mario",
+        relevancia: 2,
+        data_ins: "2023-02-01",
+        data_at: "2024-02-01",
+        logradouro: "Rua 2",
+        numero: "456",
+        complemento: "Apto 2",
+        cep: "88900-002",
+        municipio: "Araranguá",
+        estado: "SC",
+        crimes: ["Crime 2"],
+        medida_imposta: "Medida 2",
+        info_geo: {
+          coordinates: [-49.48226570746353, -28.944063538181845]
+        }
+      },
+      {
+        id: 3,
+        id_pessoa: 3,
+        nome: "Renata",
+        relevancia: 3,
+        data_ins: "2023-03-01",
+        data_at: "2024-03-01",
+        logradouro: "Rua 3",
+        numero: "789",
+        complemento: "Apto 3",
+        cep: "88900-003",
+        municipio: "Araranguá",
+        estado: "SC",
+        crimes: ["Crime 3"],
+        medida_imposta: "Medida 3",
+        info_geo: {
+          coordinates: [-49.49126570746353, -28.923063538181845]
+        }
+      }
+    ]);
+  }, []);
 
-    function clearLocationAccess() {
-      locationAccess !== null && Geolocation.clearWatch(locationAccess);
-      setLocationAccess(null);
-      setCenterPoint(null);
-    }
-    function getApVisPessoa() {
-      api
-        .get(`/ap-vis-pessoa/`)
-        .then(response => 
-          setEndereco(response.data))
-        .catch(error => console.log(error.toJSON()));
-    }
-
-    function fetchData() {
-        console.log("FETCHING DATA!");
-        getApVisPessoa()
-      const dataToSend = {
-        observacao: "Observation text",
-        id_endereco: 1,
-        matricula_policial: "123456",
-        id_apenado: 2,
-        data_visita: "2024-06-13"
-      };
-  
-      // First, get the data from the server
-      axios.get('http://192.168.202.29:5000/api/syncdata')
-          .then(response => {
-              // Handle success
-              console.log(response.data);
-              Alert.alert('Success', 'Data synchronized successfully');
-              // Now send data to the server
-              axios.post('http://192.168.202.29:5000/api/sync_visits', dataToSend)
-                  .then(postResponse => {
-                      console.log('Data sent successfully:', postResponse.data);
-                      Alert.alert('Success', 'Data sent successfully');
-                  })
-                  .catch(postError => {
-                      console.error('Error sending data:', postError);
-                      Alert.alert('Error', 'Failed to send data');
-                  });
-          })
-          .catch(error => {
-              // Handle error
-              console.error('Error fetching data:', error);
-              Alert.alert('Error', 'Failed to fetch data');
-          });
-
-    }
-
-    function centratePoint() {
-      setCenterPoint(1);
-    }
-
-    function stopFollowing() {
-      setCenterPoint(null);
-    }
-
-    function formatarData(data) {
-      const dateObj = new Date(data);
-
-      const dia = dateObj.getDate().toString().padStart(2, '0');
-      const mes = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-      const ano = dateObj.getFullYear().toString();
-
-      return `${dia}/${mes}/${ano}`;
-    }
-
-    useEffect(() => {
-      clearLocationAccess();
-      watchPosition();
-    }, []);
-  
-    useEffect(() => {
-      getApVisPessoa()
-    }, []);
-
-    function handleSubmitVisita(id: any): void {
-      api.post(`/registro-visita/${id}`, { observacao })
-        .then(response => {
-          // handle success
-          console.log(response.data);
-        })
-        .catch(error => {
-          // handle error
-          console.log(error);
+  useEffect(() => {
+    const watchId = Geolocation.watchPosition(
+      (position) => {
+        setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
         });
-    }
+      },
+      (error) => console.log(error),
+      {
+        enableHighAccuracy: true,
+        distanceFilter: 10,
+        interval: 5000,
+        fastestInterval: 2000
+      }
+    );
 
-    const navigation = useNavigation();
+    return () => Geolocation.clearWatch(watchId);
+  }, []);
+
+  function watchPosition() {
+    Geolocation.requestAuthorization(
+      () => {
+        setLocationAccess(1);
+        setCenterPoint(1);
+      },
+      () => setLocationAccess(0)
+    );
+  }
+
+  function clearLocationAccess() {
+    locationAccess !== null && Geolocation.clearWatch(locationAccess);
+    setLocationAccess(null);
+    setCenterPoint(null);
+  }
+
+  function getApVisPessoa() {
+    api
+      .get(`/ap-vis-pessoa/`)
+      .then(response => 
+        setEndereco(response.data))
+      .catch(error => console.log(error.toJSON()));
+  }
+
+  function fetchData() {
+    console.log("FETCHING DATA!");
+    getApVisPessoa();
+    const dataToSend = {
+      observacao: "Observation text",
+      id_endereco: 1,
+      matricula_policial: "123456",
+      id_apenado: 2,
+      data_visita: "2024-06-13"
+    };
+
+    // First, get the data from the server
+    axios.get('http://192.168.202.29:5000/api/syncdata')
+      .then(response => {
+        // Handle success
+        console.log(response.data);
+        Alert.alert('Success', 'Data synchronized successfully');
+        // Now send data to the server
+        axios.post('http://192.168.202.29:5000/api/sync_visits', dataToSend)
+          .then(postResponse => {
+            console.log('Data sent successfully:', postResponse.data);
+            Alert.alert('Success', 'Data sent successfully');
+          })
+          .catch(postError => {
+            console.error('Error sending data:', postError);
+            Alert.alert('Error', 'Failed to send data');
+          });
+      })
+      .catch(error => {
+        // Handle error
+        console.error('Error fetching data:', error);
+        Alert.alert('Error', 'Failed to fetch data');
+      });
+  }
+
+  function centratePoint() {
+    if (userLocation) {
+      setCenterPoint(1);
+      // Força o reposicionamento da câmera no mapa
+      this.mapCamera.flyTo([userLocation.longitude, userLocation.latitude], 1000);
+    }
+  }
+
+  function stopFollowing() {
+    setCenterPoint(null);
+  }
+
+  function formatarData(data) {
+    const dateObj = new Date(data);
+
+    const dia = dateObj.getDate().toString().padStart(2, '0');
+    const mes = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+    const ano = dateObj.getFullYear().toString();
+
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  useEffect(() => {
+    clearLocationAccess();
+    watchPosition();
+  }, []);
+  
+  useEffect(() => {
+    getApVisPessoa();
+  }, []);
+
+  function handleSubmitVisita(id: any): void {
+    api.post(`/registro-visita/${id}`, { observacao })
+      .then(response => {
+        // handle success
+        console.log(response.data);
+      })
+      .catch(error => {
+        // handle error
+        console.log(error);
+      });
+  }
+
+  const navigation = useNavigation();
     const handlePress = () => {
       navigation.goBack();
     };
 
-    return (
-      <View style={styles.page}>
-        <TouchableOpacity style={styles.backButton} onPress={handlePress}>
-          <Image
-            source={require('../../../../assets/brasao.png')}
-            style={styles.mapImage}
-          />
-          <View style={styles.rectangle}>
-            <Text style={styles.helloText}>ROBERT</Text>
-            <Text style={styles.welcomeText}>Clique para sair</Text>
-          </View>
-        </TouchableOpacity>
-        <MapLibreGL.MapView
-          contentInset={[0, 0, 0, 0]}
-          style={styles.map}
-          logoEnabled={false}
-          styleURL={`https://api.maptiler.com/maps/streets-v2/style.json?key=8BO4NhEjNmKwVKxsVu8b`}
-          attributionPosition={{ bottom: 8, right: 8 }}>
-          <MapLibreGL.Camera
-            followUserLocation={centerPoint ? true : false}
-            defaultSettings={{
-              centerCoordinate: [-49.48226570746353, -28.933063538181845],
-              zoomLevel: 10
-            }}
-          />
-          {endereco.map((p: any) => (
+  return (
+    <View style={styles.page}>
+      <TouchableOpacity style={styles.backButton} onPress={handlePress}>
+        <Image
+          source={require('../../../../assets/brasao.png')}
+          style={styles.mapImage}
+        />
+        <View style={styles.rectangle}>
+          <Text style={styles.helloText}>ROBERT</Text>
+          <Text style={styles.welcomeText}>Clique para sair</Text>
+        </View>
+      </TouchableOpacity>
+      <MapLibreGL.MapView
+        ref={(ref) => { this.mapView = ref; }}
+        contentInset={[0, 0, 0, 0]}
+        style={styles.map}
+        logoEnabled={false}
+        styleURL={`https://api.maptiler.com/maps/streets-v2/style.json?key=8BO4NhEjNmKwVKxsVu8b`}
+        attributionPosition={{ bottom: 8, right: 8 }}>
+        <MapLibreGL.Camera
+          ref={(ref) => { this.mapCamera = ref; }}
+          followUserLocation={centerPoint ? true : false}
+          defaultSettings={{
+            centerCoordinate: [-49.48226570746353, -28.933063538181845],
+            zoomLevel: 10
+          }}
+        />
+        {endereco.map((p: any) => {
+          const distance =
+            userLocation &&
+            haversineDistance(userLocation, {
+              latitude: p.info_geo.coordinates[1],
+              longitude: p.info_geo.coordinates[0]
+            });
+
+          return (
             <MapLibreGL.MarkerView
               key={`${p.id}-${p.id_pessoa}`}
               coordinate={
@@ -216,289 +332,357 @@ export default function Map() {
                   icon={faMapMarkerAlt}
                   size={22}
                   color={
-                    p.relevancia < 4
+                    p.relevancia === 1
                       ? '#FFDE14'
-                      : p.relevancia < 7
+                      : p.relevancia === 2
                       ? '#FF8800'
                       : '#E30613'
                   }
                 />
+                {distance && (
+                  <Text style={styles.distanceText}>
+                    {distance.toFixed(2)} km
+                  </Text>
+                )}
               </TouchableOpacity>
             </MapLibreGL.MarkerView>
-          ))}
+          );
+        })}
 
-          <MapLibreGL.UserLocation
-            androidRenderMode="compass"
-            renderMode="native"
-            visible={locationAccess ? true : false}
-          />
-        </MapLibreGL.MapView>
+        <MapLibreGL.UserLocation
+          androidRenderMode="compass"
+          renderMode="native"
+          visible={locationAccess ? true : false}
+        />
+      </MapLibreGL.MapView>
 
-        <Animatable.View 
-          style={styles.syncButtonContainer}
-          animation={'slideInUp'}
-          easing={'ease-in-out'}>
+      <Animatable.View 
+        style={styles.syncButtonContainer}
+        animation={'slideInUp'}
+        easing={'ease-in-out'}>
+        <TouchableOpacity
+          style={styles.roundButton}
+          onPress={fetchData}
+          activeOpacity={0.9}>
+          <FontAwesomeIcon icon={faSync} color="#000" size={22} />
+        </TouchableOpacity>
+      </Animatable.View>
+
+      <Animatable.View 
+        style={styles.listButtonContainer}
+        animation={'slideInUp'}
+        easing={'ease-in-out'}>
+        <TouchableOpacity
+          style={styles.roundButton}
+          onPress={() => setListModalVisible(true)}
+          activeOpacity={0.9}>
+          <FontAwesomeIcon icon={faList} color="#000" size={22} />
+        </TouchableOpacity>
+      </Animatable.View>
+
+      <Animatable.View
+        style={styles.centerButton}
+        animation={'slideInUp'}
+        easing={'ease-in-out'}>
+        {centerPoint !== null ? (
           <TouchableOpacity
             style={styles.roundButton}
-            onPress={fetchData}
+            onPress={stopFollowing}
             activeOpacity={0.9}>
-            <FontAwesomeIcon icon={faSync} color="#000" size={22} />
+            <FontAwesomeIcon icon={faArrowsToDot} color="#000" size={22} />
           </TouchableOpacity>
-        </Animatable.View>
+        ) : (
+          <TouchableOpacity
+            style={styles.roundButton}
+            onPress={centratePoint}
+            activeOpacity={0.9}>
+            <FontAwesomeIcon icon={faArrowsToDot} color="#000" size={22} />
+          </TouchableOpacity>
+        )}
+      </Animatable.View>
 
-        <Animatable.View
-          style={styles.centerButton}
-          animation={'slideInUp'}
-          easing={'ease-in-out'}>
-          {/* {locationAccess !== null ? (
+      {modalVisible && (
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={true}
+          onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.condenado}>
             <TouchableOpacity
-              style={styles.button}
-              onPress={clearLocationAccess}
-              activeOpacity={0.9}>
-              <FontAwesomeIcon icon={faXmark} color="#000" size={24} />
+              activeOpacity={0.9}
+              style={styles.condButton}
+              onPress={() => {
+                setModalVisible(false);
+              }}>
+              <FontAwesomeIcon icon={faArrowLeft} color="#26117A" size={20} />
             </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={watchPosition}
-              activeOpacity={0.9}>
-              <FontAwesomeIcon icon={faLocationArrow} color="#000" size={24} />
-            </TouchableOpacity>
-          )} */}
-          {centerPoint !== null ? (
-            <TouchableOpacity
-              style={styles.roundButton}
-              onPress={stopFollowing}
-              activeOpacity={0.9}>
-              <FontAwesomeIcon icon={faArrowsToDot} color="#000" size={22} />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.roundButton}
-              onPress={centratePoint}
-              activeOpacity={0.9}>
-              <FontAwesomeIcon icon={faArrowsToDot} color="#000" size={22} />
-            </TouchableOpacity>
-          )}
-        </Animatable.View>
+            <Text style={styles.pageTitle}>Perfil do Indivíduo</Text>
+            <View style={styles.head_infos}>
+              <Image
+                source={require('../../../../assets/profile_image.png')}
+                style={{
+                  maxWidth: 110,
+                  maxHeight: 110,
+                  borderRadius: 70,
+                  borderWidth: 5,
+                  borderColor: '#73BA96'
+                }}
+              />
 
-        {modalVisible && (
-          <Modal
-            animationType="slide"
-            transparent={false}
-            visible={true}
-            onRequestClose={() => setModalVisible(false)}>
-            <View style={styles.condenado}>
+              <View style={styles.datas}>
+                <Text
+                  style={[
+                    styles.relevancia,
+                    {
+                      color:
+                        selectedPerson.relevancia === 1
+                          ? '#FFDE14'
+                          : selectedPerson.relevancia === 2
+                          ? '#FF8800'
+                          : '#E30613'
+                    }
+                  ]}>
+                  <Text style={{ color: '#26117A' }}>Relevância: </Text>
+                  {selectedPerson
+                    ? selectedPerson.relevancia === 1
+                      ? 'BAIXA'
+                      : selectedPerson.relevancia === 2
+                      ? 'MÉDIA'
+                      : 'ALTA'
+                    : ''}
+                </Text>
+                <Text style={styles.relevancia}>
+                  <Text style={{ color: '#26117A' }}>Início de Pena: </Text>
+                  {selectedPerson
+                    ? formatarData(selectedPerson.data_ins)
+                    : ''}
+                </Text>
+                <Text style={styles.relevancia}>
+                  <Text style={{ color: '#26117A' }}>Fim de Pena: </Text>
+                  {selectedPerson ? formatarData(selectedPerson.data_at) : ''}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.condNome}>
+              {selectedPerson ? selectedPerson.nome : 'Nome não registrado.'}
+            </Text>
+            <View style={styles.loc_infos}>
+              <Text>
+                {selectedPerson
+                  ? selectedPerson.logradouro
+                  : 'Logradouro não registrado.'}
+                ,{' '}
+              </Text>
+              <Text>
+                {selectedPerson
+                  ? selectedPerson.numero
+                  : 'Número não registrado.'}{' '}
+                -{' '}
+              </Text>
+              <Text>
+                {selectedPerson
+                  ? selectedPerson.complemento
+                  : 'Complemento não registrado.'}
+              </Text>
+              <Text>
+                CEP:{' '}
+                {selectedPerson ? selectedPerson.cep : 'CEP não registrado.'},{' '}
+              </Text>
+              <Text>
+                {selectedPerson
+                  ? selectedPerson.municipio
+                  : 'Município não registrado.'}{' '}
+                -{' '}
+              </Text>
+              <Text>
+                {selectedPerson
+                  ? selectedPerson.estado
+                  : 'Estado não registrado.'}
+              </Text>
+            </View>
+
+            <Text
+              style={{
+                color: '#73BA96',
+                fontSize: 14,
+                fontWeight: 700,
+                marginTop: 20
+              }}>
+              Crimes
+            </Text>
+            <Text style={styles.crimes}>
+              {selectedPerson
+                ? selectedPerson.crimes.map(crime => crime).join(', ')
+                : 'Nenhum crime registrado.'}
+            </Text>
+            <Text
+              style={{
+                color: '#73BA96',
+                fontSize: 14,
+                fontWeight: 700,
+                marginTop: 20
+              }}>
+              Medida Imposta
+            </Text>
+            <Text style={styles.medida}>
+              {selectedPerson
+                ? selectedPerson.medida_imposta
+                : 'Nenhuma medida registrada.'}
+            </Text>
+
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.visitaButton}
+              onPress={() => {
+                setVisitaVisible(true);
+              }}>
+              <Text style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>
+                Registrar Visita
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      )}
+
+      {visitaVisible && (
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={true}
+          onRequestClose={() => setVisitaVisible(false)}>
+          <View style={styles.condenado}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.visitaBack}
+              onPress={() => {
+                setVisitaVisible(false);
+              }}>
+              <FontAwesomeIcon icon={faArrowLeft} color="#26117A" size={20} />
+            </TouchableOpacity>
+            <Text style={styles.pageTitle}>Cadastro de Visita</Text>
+
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                alignSelf: 'center',
+                marginVertical: 12,
+                color: '#26117A'
+              }}>
+              O Indivíduo estava em casa?
+            </Text>
+
+            <View style={styles.visitaCheck}>
               <TouchableOpacity
-                activeOpacity={0.9}
-                style={styles.condButton}
-                onPress={() => {
-                  setModalVisible(false);
-                }}>
-                <FontAwesomeIcon icon={faArrowLeft} color="#26117A" size={20} />
+                style={styles.visitaCheckSim}
+                activeOpacity={0.9}>
+                <Text style={styles.btnText}>SIM</Text>
               </TouchableOpacity>
-              <Text style={styles.pageTitle}>Perfil do Indivíduo</Text>
-              <View style={styles.head_infos}>
-                <Image
-                  source={require('../../../../assets/profile_image.png')}
-                  style={{
-                    maxWidth: 110,
-                    maxHeight: 110,
-                    borderRadius: 70,
-                    borderWidth: 5,
-                    borderColor: '#73BA96'
-                  }}
-                />
-
-                <View style={styles.datas}>
-                  <Text
-                    style={[
-                      styles.relevancia,
-                      {
-                        color:
-                          selectedPerson.relevancia < 4
-                            ? '#FFDE14'
-                            : selectedPerson.relevancia < 7
-                            ? '#FF8800'
-                            : '#E30613'
-                      }
-                    ]}>
-                    <Text style={{ color: '#26117A' }}>Relevância: </Text>
-                    {selectedPerson
-                      ? selectedPerson.relevancia < 4
-                        ? 'BAIXA'
-                        : selectedPerson.relevancia < 7
-                        ? 'MÉDIA'
-                        : 'ALTA'
-                      : ''}
-                  </Text>
-                  <Text style={styles.relevancia}>
-                    <Text style={{ color: '#26117A' }}>Início de Pena: </Text>
-                    {selectedPerson
-                      ? formatarData(selectedPerson.data_ins)
-                      : ''}
-                  </Text>
-                  <Text style={styles.relevancia}>
-                    <Text style={{ color: '#26117A' }}>Fim de Pena: </Text>
-                    {selectedPerson ? formatarData(selectedPerson.data_at) : ''}
-                  </Text>
-                </View>
-              </View>
-
-              <Text style={styles.condNome}>
-                {selectedPerson ? selectedPerson.nome : 'Nome não registrado.'}
-              </Text>
-              <View style={styles.loc_infos}>
-                <Text>
-                  {selectedPerson
-                    ? selectedPerson.logradouro
-                    : 'Logradouro não registrado.'}
-                  ,{' '}
-                </Text>
-                <Text>
-                  {selectedPerson
-                    ? selectedPerson.numero
-                    : 'Número não registrado.'}{' '}
-                  -{' '}
-                </Text>
-                <Text>
-                  {selectedPerson
-                    ? selectedPerson.complemento
-                    : 'Complemento não registrado.'}
-                </Text>
-                <Text>
-                  CEP:{' '}
-                  {selectedPerson ? selectedPerson.cep : 'CEP não registrado.'},{' '}
-                </Text>
-                <Text>
-                  {selectedPerson
-                    ? selectedPerson.municipio
-                    : 'Município não registrado.'}{' '}
-                  -{' '}
-                </Text>
-                <Text>
-                  {selectedPerson
-                    ? selectedPerson.estado
-                    : 'Estado não registrado.'}
-                </Text>
-              </View>
-
-              <Text
-                style={{
-                  color: '#73BA96',
-                  fontSize: 14,
-                  fontWeight: 700,
-                  marginTop: 20
-                }}>
-                Crimes
-              </Text>
-              <Text style={styles.crimes}>
-                {selectedPerson
-                  ? selectedPerson.crimes.map(crime => crime).join(', ')
-                  : 'Nenhum crime registrado.'}
-              </Text>
-              <Text
-                style={{
-                  color: '#73BA96',
-                  fontSize: 14,
-                  fontWeight: 700,
-                  marginTop: 20
-                }}>
-                Medida Imposta
-              </Text>
-              <Text style={styles.medida}>
-                {selectedPerson
-                  ? selectedPerson.medida_imposta
-                  : 'Nenhuma medida registrada.'}
-              </Text>
-
               <TouchableOpacity
-                activeOpacity={0.9}
-                style={styles.visitaButton}
-                onPress={() => {
-                  setVisitaVisible(true);
-                }}>
-                <Text style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>
-                  Registrar Visita
-                </Text>
+                style={styles.visitaCheckNao}
+                activeOpacity={0.9}>
+                <Text style={styles.btnText}>NÃO</Text>
               </TouchableOpacity>
             </View>
-          </Modal>
-        )}
 
-        {visitaVisible && (
-          <Modal
-            animationType="slide"
-            transparent={false}
-            visible={true}
-            onRequestClose={() => setVisitaVisible(false)}>
-            <View style={styles.condenado}>
-              <TouchableOpacity
-                activeOpacity={0.9}
-                style={styles.visitaBack}
-                onPress={() => {
-                  setVisitaVisible(false);
-                }}>
-                <FontAwesomeIcon icon={faArrowLeft} color="#26117A" size={20} />
-              </TouchableOpacity>
-              <Text style={styles.pageTitle}>Cadastro de Visita</Text>
-
+            <View style={styles.inputContainer}>
               <Text
                 style={{
+                  color: 'red',
                   fontSize: 16,
-                  fontWeight: 700,
-                  alignSelf: 'center',
-                  marginVertical: 12,
-                  color: '#26117A'
+                  marginLeft: 30,
+                  marginTop: 10,
+                  marginBottom: -15
                 }}>
-                O Indivíduo estava em casa?
+                *<Text style={{ color: '#7D7D7D' }}>Observação:</Text>
               </Text>
-
-              <View style={styles.visitaCheck}>
-                <TouchableOpacity
-                  style={styles.visitaCheckSim}
-                  activeOpacity={0.9}>
-                  <Text style={styles.btnText}>SIM</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.visitaCheckNao}
-                  activeOpacity={0.9}>
-                  <Text style={styles.btnText}>NÃO</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text
-                  style={{
-                    color: 'red',
-                    fontSize: 16,
-                    marginLeft: 30,
-                    marginTop: 10,
-                    marginBottom: -15
-                  }}>
-                  *<Text style={{ color: '#7D7D7D' }}>Observação:</Text>
-                </Text>
-                <TextInput
-                  multiline
-                  style={styles.textInput}
-                  onChangeText={setObservacao}
-                  value={observacao}
-                />
-              </View>
-
-              <TouchableOpacity style={styles.sendBtn} activeOpacity={0.9}>
-                <Text
-                  style={styles.btnText}
-                  onPress={() => handleSubmitVisita(selectedPerson?.id)}>
-                  Enviar
-                </Text>
-              </TouchableOpacity>
+              <TextInput
+                multiline
+                style={styles.textInput}
+                onChangeText={setObservacao}
+                value={observacao}
+              />
             </View>
-          </Modal>
-        )}
-      </View>
-    );
-  }
+
+            <TouchableOpacity style={styles.sendBtn} activeOpacity={0.9}>
+              <Text
+                style={styles.btnText}
+                onPress={() => handleSubmitVisita(selectedPerson?.id)}>
+                Enviar
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      )}
+
+      {listModalVisible && (
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={true}
+          onRequestClose={() => setListModalVisible(false)}>
+          <View style={styles.condenado}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.condButton}
+              onPress={() => {
+                setListModalVisible(false);
+              }}>
+              <FontAwesomeIcon icon={faArrowLeft} color="#26117A" size={20} />
+            </TouchableOpacity>
+            <Text style={styles.pageTitle}>Lista de Apenados</Text>
+            <ScrollView style={styles.listContainer}>
+              {endereco.map((p: any) => {
+                const distance =
+                  userLocation &&
+                  haversineDistance(userLocation, {
+                    latitude: p.info_geo.coordinates[1],
+                    longitude: p.info_geo.coordinates[0]
+                  });
+
+                const relevanciaColor = 
+                  p.relevancia === 1
+                    ? '#FFDE14'
+                    : p.relevancia === 2
+                    ? '#FF8800'
+                    : '#E30613';
+
+                return (
+                  <View key={p.id} style={styles.listItem}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View
+                        style={[
+                          styles.listItemIndicator,
+                          { backgroundColor: relevanciaColor }
+                        ]}
+                      />
+                      <Text style={styles.listItemText}>{p.nome}</Text>
+                    </View>
+                    {distance && (
+                      <Text style={styles.listItemDistance}>
+                        {distance.toFixed(2)} km
+                      </Text>
+                    )}
+                    <TouchableOpacity
+                      style={styles.listItemButton}
+                      onPress={() => {
+                        setSelectedPerson(p);
+                        setModalVisible(true);
+                        setListModalVisible(false);
+                      }}
+                      activeOpacity={0.8}>
+                      <FontAwesomeIcon icon={faLocationArrow} color="#000" size={22} />
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </Modal>
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -521,12 +705,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch'
   },
-  centerButton: {
-    position: 'absolute',
-    top: "9%",
-    right: "5%",
-    borderRadius: 0.5
-  },
   button: {
     backgroundColor: '#FFF',
     minWidth: '40%',
@@ -540,6 +718,18 @@ const styles = StyleSheet.create({
   syncButtonContainer: {
     position: 'absolute',
     top: '2%',
+    right: "5%",
+    borderRadius: 0.5
+  },
+  centerButton: {
+    position: 'absolute',
+    top: "9%",
+    right: "5%",
+    borderRadius: 0.5
+  },
+  listButtonContainer: {
+    position: 'absolute',
+    top: "16%",
     right: "5%",
     borderRadius: 0.5
   },
@@ -702,6 +892,52 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 18
+  },
+  listContainer: {
+    marginTop: 20,
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  listItemText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  listItemIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  listItemDistance: {
+    fontSize: 14,
+    marginLeft: 10,
+  },
+  listItemButton: {
+    backgroundColor: '#FFF',
+    borderRadius: 50,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.55,
+    shadowRadius: 4.84,
+    elevation: 5,
+  },
+  distanceText: {
+    fontSize: 12,
+    color: '#000',
+    textAlign: 'center',
+    marginTop: 5,
   },
   backButton: {
     position: 'absolute',

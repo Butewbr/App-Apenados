@@ -7,7 +7,8 @@ import {
   TextInput,
   Alert,
   KeyboardAvoidingView,
-  Keyboard
+  Keyboard,
+  Dimensions
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable';
@@ -191,6 +192,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 10,
-    flex: 1
+    paddingVertical: 15, // Fixa o botão na parte inferior da tela
+    width: '100%'
   }
 });
