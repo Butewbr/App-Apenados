@@ -4,6 +4,12 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+    { 
+      "name": "Debug React Vite", 
+      "request": "launch", 
+      "type": "pwa-chrome", 
+      "url": "http://localhost:5173", 
+      "webRoot": "${workspaceFolder}/frontend-web/src" },
     {
       "name": "Attach to Hermes application",
       "request": "attach",
@@ -27,7 +33,7 @@
         "FLASK_APP": "server/app/app.py",
         "FLASK_DEBUG": "1"
       },
-      "args": ["run", "--no-debugger", "--no-reload"],
+      "args": ["run", "--host=0.0.0.0"],
       "jinja": true,
       "autoStartBrowser": false
     }

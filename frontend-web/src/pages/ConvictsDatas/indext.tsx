@@ -1,7 +1,8 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ConvictContext } from '../../context/ConvictContext'
 import { ConvictsDatasContainer, FormContainer, Pagination } from './styles'
+import api from '../api'
 
 export function ConvictsDatasPage() {
 
@@ -13,9 +14,20 @@ export function ConvictsDatasPage() {
 
   const navigate = useNavigate()
 
-  const { apenados } = useContext(ConvictContext)
+  const [apenados, setApenados] = useState<any>([]);
 
-  
+  useEffect(() => {
+    api
+      .get('/api/apenados')
+      .then((response) => {
+        setApenados(response.data)
+      })
+      .catch((error) => {
+        console.error('Error fetching apenados:', error)
+      });
+  }, []);
+
+
   const handleBuscaChange = (event: any) => {
     setBusca(event.target.value)
   }
@@ -27,7 +39,7 @@ export function ConvictsDatasPage() {
   const apenadosFiltrados = apenados.filter(
     (apenado) =>
       apenado.nome.toLowerCase().includes(busca.toLowerCase()) ||
-      apenado.endereco.logradouro.toLowerCase().includes(busca.toLowerCase()) ||
+      apenado.endereco.rua.toLowerCase().includes(busca.toLowerCase()) ||
       apenado.relevancia.toLowerCase().includes(busca.toLowerCase()) ||
       apenado.dataInicio.includes(busca) ||
       apenado.dataFim.includes(busca) ||
@@ -43,8 +55,7 @@ export function ConvictsDatasPage() {
 
   const totalPaginas = Math.ceil(apenadosFiltrados.length / itensPorPagina)
 
-
-  const handleRowClick = (id:any) => {
+  const handleRowClick = (id: any) => {
     navigate(`/dashboard/lista-apenados/${id}`)
   }
   return (
@@ -79,23 +90,23 @@ export function ConvictsDatasPage() {
         <table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Nome</th>
               <th>Endereço</th>
               <th>Relevância</th>
               <th>Data Início</th>
               <th>Data Fim</th>
-              <th>Situação</th>
             </tr>
           </thead>
           <tbody>
             {apenadosPaginados.map((apenado, index) => (
-              <tr key={index} onClick={() => handleRowClick(index)} style={{cursor: 'pointer'}} >
+              <tr key={apenado.id} onClick={() => handleRowClick(apenado.id)} style={{cursor: 'pointer'}} >
+                <td>{apenado.id}</td>
                 <td>{apenado.nome}</td>
-                <td>{`${apenado.endereco.logradouro}, ${apenado.endereco.numero}, ${apenado.endereco.municipio}, ${apenado.endereco.estado}, ${apenado.endereco.cep}, ${apenado.endereco.complemento}`}</td>
+                <td>{`${(apenado.rua)?apenado.rua+', ':''} ${(apenado.numero)?apenado.numero+', ':''} ${(apenado.municipio)?apenado.municipio+', ':''} ${(apenado.estado)?apenado.estado+', ':''} ${(apenado.cep)?apenado.cep+', ':''} ${(apenado.complemento)?apenado.complemento+', ':''}`}</td>
                 <td>{apenado.relevancia}</td>
-                <td>{apenado.dataInicio}</td>
-                <td>{apenado.dataFim}</td>
-                <td>{apenado.situacao}</td>
+                <td>{apenado.data_inicio?new Date(apenado.data_inicio).toLocaleDateString():''}</td>
+                <td>{apenado.data_fim?new Date(apenado.data_fim).toLocaleDateString():''}</td>
               </tr>
             ))}
           </tbody>

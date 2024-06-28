@@ -16,6 +16,14 @@ import * as Animatable from 'react-native-animatable';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+axios.defaults.withCredentials = true;
+
+const api = axios.create({
+  baseURL: 'http://172.20.160.1:5000/'
+});
+
 export default function Login() {
   const navigation = useNavigation();
   const [matricula, onChangeMat] = useState('');
@@ -23,11 +31,18 @@ export default function Login() {
   const [escondeSenha, setEscondeSenha] = useState(true);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
-  // Mock database for login credentials
-  const mockDatabase = {
-    '123456': 'senha123', // Example matricula and senha
-    // Add more credentials as needed
-  };
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      try {
+        const usuario = await AsyncStorage.getItem('usuario');
+        navigation.navigate('Map');
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    checkLoggedIn();
+  }, []);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
@@ -44,20 +59,17 @@ export default function Login() {
     };
   }, []);
 
-  const handleLogin = () => {
-    // Check if matricula exists in the mock database
-    if (mockDatabase.hasOwnProperty(matricula)) {
-      // Check if senha matches the stored senha for the matricula
-      if (mockDatabase[matricula] === senha) {
-        // Navigate to the next screen on successful login
-        navigation.navigate('Map');
-      } else {
-        // Alert for incorrect senha
-        Alert.alert('Erro', 'Senha incorreta');
-      }
-    } else {
-      // Alert for matricula not found
-      Alert.alert('Erro', 'Matrícula não encontrada');
+  const handleLogin = async () => {
+    try {
+      await AsyncStorage.setItem('usuario', '');
+      const formData = new FormData();
+      formData.append('matricula', matricula);
+      formData.append('password', senha);
+      const response = await api.post('/login', formData, {headers: { "Content-Type": "multipart/form-data" }});
+      await AsyncStorage.setItem('usuario', JSON.stringify(response.data.usuario));
+      navigation.navigate('Map');
+    } catch (error) {
+      alert('Invalid credentials');
     }
   };
 
@@ -130,7 +142,7 @@ export default function Login() {
           style={{ flex: 1, width: '100%', height: 20, resizeMode: 'contain' }}
           resizeMode="contain"
         />
-      )}
+      )} 
     </KeyboardAvoidingView>
   );
 }

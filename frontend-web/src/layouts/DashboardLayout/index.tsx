@@ -16,13 +16,32 @@ import {
   Logout,
 } from './styles'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 export function DashboardLayout() {
   const navigate = useNavigate()
+  const [usuario, setUsuario] = useState(
+    JSON.parse(localStorage.getItem('usuario') || ''),
+  )
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setUsuario(JSON.parse(localStorage.getItem('usuario') || ''));
+    }
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    }
+  }, [])
 
   function handleLogout() {
     navigate('/')
   }
+
+  const firstName = usuario?.nome?.split(' ')[0] || '';
+  const lastName = usuario?.nome?.split(' ')[1] || '';
 
   return (
     <DashboardLayoutContainer>
@@ -61,9 +80,9 @@ export function DashboardLayout() {
           </AccountStatus>
 
           <User>
-            <span>Super Usuário</span>
+            <span>{firstName}</span>
 
-            <span>U</span>
+            {<span>{firstName[0] + (lastName ? lastName[0] : firstName[1])}</span>}
           </User>
 
           <Logout onClick={handleLogout}>Sair</Logout>

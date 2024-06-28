@@ -59,6 +59,23 @@ h1 {
   font-size: 4rem;
   color: ${props=> props.theme['green-300']};
 }
+
+  span {
+    &:first-child {
+      background: #e0e0e0;
+      width: 8rem;
+      height: 8rem;
+      border-radius: 50%;
+      padding: 1rem;
+      font-weight: bold;
+      margin-left: 1rem;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+  }
 `
 
 

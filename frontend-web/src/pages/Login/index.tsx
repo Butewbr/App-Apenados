@@ -12,6 +12,7 @@ import policemanImg from '../../assets/policeman.svg'
 import pmLogo from '../../assets/pm-logo.svg'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import api from '../api'
 
 export function LoginPage() {
   const [password, setPassword] = useState('')
@@ -19,16 +20,21 @@ export function LoginPage() {
 
   const navigate = useNavigate()
 
-  function handleLogin() {
-    if (password === '12345678' && userName === 'pmsystem') {
+  const handleLogin = async () => {
+    try {
+      localStorage.setItem('usuario', '')
+      const formData = new FormData()
+      formData.append('matricula', userName)
+      formData.append('password', password)
+      const response = await api.post('/login', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      localStorage.setItem('usuario', JSON.stringify(response.data.usuario))
       navigate('/dashboard')
-
-      return
+    } catch (error) {
+      alert('Usuário ou senha errado, verifique e tente novamente')
     }
-
-    alert('Usuário ou senha errado, verifique e tente novamente')
-  }
-
+  };
   return (
     <LoginPageContainer>
       <div>
@@ -56,7 +62,7 @@ export function LoginPage() {
 
           <RecoveryPassword href="#">Recuperar senha?</RecoveryPassword>
 
-          <LoginButton onClick={handleLogin}>Login</LoginButton>
+          <LoginButton type="button" onClick={handleLogin}>Login</LoginButton>
           <img src={pmLogo} alt="" />
         </FormContainer>
         <PoliceManImage src={policemanImg} alt="Policeman" />

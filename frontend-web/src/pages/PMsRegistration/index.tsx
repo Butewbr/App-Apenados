@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   FormContainer,
   ConvictsRegistrationContainer,
@@ -7,12 +8,50 @@ import {
   Input,
   ButtonSaveInformation,
 } from './styles'
+import api from '../api'
 
 export function PMsRegistrationPage() {
+  const [usuario, setUsuario] = useState({
+    matricula: '',
+    senha: '',
+    confirmarSenha: '',
+    nome: '',
+    cpf: '',
+    telefone: '',
+  })
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { id, value } = e.target
+    setUsuario((prevState) => ({
+      ...prevState,
+      [id]: value,
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await api.post('/register', usuario)
+      console.log('Data sent successfully:', response.data)
+      alert('Cadastrado com sucesso!')
+      setUsuario({
+        matricula: '',
+        senha: '',
+        confirmarSenha: '',
+        nome: '',
+        cpf: '',
+        telefone: '',
+      })
+    } catch (error) {
+      console.error('Error sending data:', error)
+    }
+  }
   return (
     <ConvictsRegistrationContainer>
       <h1>Cadastro de PMs</h1>
-      <FormContainer>
+      <FormContainer autoComplete="off" onSubmit={handleSubmit}>
         <fieldset>
           <FieldsetWrapper>
             <legend>Informações de acesso</legend>
@@ -20,15 +59,32 @@ export function PMsRegistrationPage() {
             <InformationAcessWrapper>
               <div>
                 <label htmlFor="matricula">Matrícula</label>
-                <Input type="text" id="matricula" />
+                <Input
+                  autoComplete="new-password"
+                  type="text"
+                  id="matricula"
+                  value={usuario.matricula}
+                  onChange={handleChange}
+                />
               </div>
               <div>
                 <label htmlFor="senha">Senha</label>
-                <Input type="password" id="senha" />
+                <Input
+                  autoComplete="new-password"
+                  type="password"
+                  id="senha"
+                  value={usuario.senha}
+                  onChange={handleChange}
+                />
               </div>
               <div>
-                <label htmlFor="confirmar-senha">Confirmar senha</label>
-                <Input type="password" id="confirmar-senha" />
+                <label htmlFor="confirmarSenha">Confirmar senha</label>
+                <Input
+                  type="password"
+                  id="confirmarSenha"
+                  value={usuario.confirmarSenha}
+                  onChange={handleChange}
+                />
               </div>
             </InformationAcessWrapper>
           </FieldsetWrapper>
@@ -41,37 +97,56 @@ export function PMsRegistrationPage() {
             <InformationAcessWrapper>
               <div>
                 <label htmlFor="nome">Nome</label>
-                <Input type="text" id="nome" />
+                <Input
+                  type="text"
+                  id="nome"
+                  value={usuario.nome}
+                  onChange={handleChange}
+                />
               </div>
-              <div>
+              {/* <div>
                 <label htmlFor="sobrenome">Sobrenome</label>
-                <Input type="text" id="sobrenome" />
-              </div>
+                <Input type="text" id="sobrenome" value={usuario.sobrenome} onChange={handleChange} />
+              </div> */}
               <div>
                 <label htmlFor="cpf">CPF</label>
-                <Input type="number" id="cpf" />
+                <Input
+                  type="number"
+                  id="cpf"
+                  value={usuario.cpf}
+                  onChange={handleChange}
+                />
               </div>
               <div>
                 <label htmlFor="telefone">Telefone</label>
-                <Input type="tel" id="telefone" />
+                <Input
+                  type="tel"
+                  id="telefone"
+                  value={usuario.telefone}
+                  onChange={handleChange}
+                />
               </div>
-              <div>
+              {/* <div>
                 <label htmlFor="email">Email</label>
-                <Input type="email" id="email" />
-              </div>
+                <Input type="email" id="email" value={usuario.email} onChange={handleChange} />
+              </div> */}
             </InformationAcessWrapper>
           </FieldsetWrapper>
         </fieldset>
 
         <fieldset>
-          <FieldsetWrapper>
+          <FieldsetWrapper style={{ display: 'none' }}>
             <legend>Dados Profissionais</legend>
 
             <InformationAcessWrapper>
               <div>
                 <label htmlFor="nome">Cargo</label>
 
-                <Select id="cargo">
+                <Select
+                  id="cargo"
+                  value={usuario.cargo}
+                  onChange={handleChange}
+                >
                   <option value="1">Cargo 1</option>
                   <option value="2">Cargo 2</option>
                   <option value="3">Cargo 3</option>
@@ -80,7 +155,11 @@ export function PMsRegistrationPage() {
               <div>
                 <label htmlFor="unidade-policial">Unidade Policial</label>
 
-                <Select id="unidade-policial">
+                <Select
+                  id="unidade-policial"
+                  value={usuario.unidadePolicial}
+                  onChange={handleChange}
+                >
                   <option value="1">Unidade 1</option>
                   <option value="2">Unidade 2</option>
                   <option value="3">Unidade 3</option>
@@ -89,7 +168,11 @@ export function PMsRegistrationPage() {
               <div>
                 <label htmlFor="situacao">Situação</label>
 
-                <Select id="situacao">
+                <Select
+                  id="situacao"
+                  value={usuario.situacao}
+                  onChange={handleChange}
+                >
                   <option value="1">situacao 1</option>
                   <option value="2">situacao 2</option>
                   <option value="3">situacao 3</option>
@@ -99,7 +182,9 @@ export function PMsRegistrationPage() {
           </FieldsetWrapper>
         </fieldset>
 
-        <ButtonSaveInformation>SALVAR INFORMAÇÕES</ButtonSaveInformation>
+        <ButtonSaveInformation type="submit">
+          SALVAR INFORMAÇÕES
+        </ButtonSaveInformation>
       </FormContainer>
     </ConvictsRegistrationContainer>
   )

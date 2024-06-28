@@ -18,7 +18,7 @@ import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
 
 const api = axios.create({
-  baseURL: 'http://192.168.202.29:3000/'
+  baseURL: 'http://172.20.160.1:5000/'
 });
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -38,6 +38,7 @@ import {
   faArrowsToCircle,
   faList
 } from '@fortawesome/free-solid-svg-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 LogBox.ignoreLogs(['Warning: ...']);
 LogBox.ignoreAllLogs();
@@ -77,74 +78,33 @@ const haversineDistance = (coords1, coords2) => {
 export default function Map() {
   const [centerPoint, setCenterPoint] = useState<number | null>(null);
   const [locationAccess, setLocationAccess] = useState<number | null>(null);
-  const [endereco, setEndereco] = useState([]);
+  const [dados, setDados] = useState({});
+  const [usuario, setUsuario] = useState<any>({});
+  const [altPenal, setAltPenal] = useState<any>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [listModalVisible, setListModalVisible] = useState(false);
   const [visitaVisible, setVisitaVisible] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [estavaEmCasa, setEstavaEmCasa] = useState(true);
+  const [conectado, setConectado] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<any>(null);
   const [observacao, setObservacao] = useState('');
   const [userLocation, setUserLocation] = useState(null);
+  const [visitasCount, setVisitasCount] = useState(0);
 
   useEffect(() => {
-    setEndereco([
-      {
-        id: 1,
-        id_pessoa: 1,
-        nome: "Gabriel",
-        relevancia: 1,
-        data_ins: "2023-01-01",
-        data_at: "2024-01-01",
-        logradouro: "Rua 1",
-        numero: "123",
-        complemento: "Apto 1",
-        cep: "88900-001",
-        municipio: "Araranguá",
-        estado: "SC",
-        crimes: ["Crime 1"],
-        medida_imposta: "Medida 1",
-        info_geo: {
-          coordinates: [-49.47326570746353, -28.935063538181845]
+    const checkLoggedIn = async () => {
+      try {
+        const usuario = await AsyncStorage.getItem('usuario');
+        if (!usuario) {
+          navigation.navigate('Login');
         }
-      },
-      {
-        id: 2,
-        id_pessoa: 2,
-        nome: "Mario",
-        relevancia: 2,
-        data_ins: "2023-02-01",
-        data_at: "2024-02-01",
-        logradouro: "Rua 2",
-        numero: "456",
-        complemento: "Apto 2",
-        cep: "88900-002",
-        municipio: "Araranguá",
-        estado: "SC",
-        crimes: ["Crime 2"],
-        medida_imposta: "Medida 2",
-        info_geo: {
-          coordinates: [-49.48226570746353, -28.944063538181845]
-        }
-      },
-      {
-        id: 3,
-        id_pessoa: 3,
-        nome: "Renata",
-        relevancia: 3,
-        data_ins: "2023-03-01",
-        data_at: "2024-03-01",
-        logradouro: "Rua 3",
-        numero: "789",
-        complemento: "Apto 3",
-        cep: "88900-003",
-        municipio: "Araranguá",
-        estado: "SC",
-        crimes: ["Crime 3"],
-        medida_imposta: "Medida 3",
-        info_geo: {
-          coordinates: [-49.49126570746353, -28.923063538181845]
-        }
+        setUsuario(JSON.parse(usuario));
+      } catch (error) {
+        console.log(error);
       }
-    ]);
+    };
+
+    checkLoggedIn();
   }, []);
 
   useEffect(() => {
@@ -167,6 +127,44 @@ export default function Map() {
     return () => Geolocation.clearWatch(watchId);
   }, []);
 
+  useEffect(() => {
+    userLocation && altPenal && altPenal.length > 0 && setAltPenal(altPenal.map((p: any) => {
+      p.distance = haversineDistance(
+        {latitude: userLocation.latitude, longitude: userLocation.longitude},
+        {latitude: p.info_geo?.coordinates[1], longitude: p.info_geo?.coordinates[0]}
+      );
+      return p;
+    }));
+  }, [userLocation]);
+
+  useEffect(() => {
+    dados.AltPenal && dados.AltPenal.length>0 && setAltPenal(dados.AltPenal.map(altPenal => {
+      altPenal.crimes = dados.Crime.filter(crime=> altPenal.id == crime.id_altpenal);      
+      altPenal.visitas = dados.Visita.filter(visita=> altPenal.id_altpenal == visita.id_altpenal);      
+      userLocation && (altPenal.distance = haversineDistance(
+        {latitude: userLocation?.latitude, longitude: userLocation?.longitude},
+        {latitude: altPenal.info_geo?.coordinates[1], longitude: altPenal.info_geo?.coordinates[0]}
+      ));
+
+    return altPenal
+    }));
+  }, [dados]);
+
+  useEffect(() => {
+    if (conectado) syncVisitas();
+  }, [conectado]);
+
+  useEffect(() => {
+    const fetchVisitasCount = async () => {
+      let visitas = await getStoredData('visitas');
+      if (visitas && visitas.length > 0) {
+        setVisitasCount(visitas.length);
+      }
+    };
+
+    fetchVisitasCount();
+  }, []);
+
   function watchPosition() {
     Geolocation.requestAuthorization(
       () => {
@@ -183,46 +181,40 @@ export default function Map() {
     setCenterPoint(null);
   }
 
-  function getApVisPessoa() {
-    api
-      .get(`/ap-vis-pessoa/`)
-      .then(response => 
-        setEndereco(response.data))
-      .catch(error => console.log(error.toJSON()));
+  async function syncVisitas()  {
+    let visitas = await getStoredData('visitas');
+    if (visitas && visitas.length > 0) {          
+      try {
+        const response = await api.post('/api/sync_visits', visitas);
+        Alert.alert('Success', 'Visitas sincronizadas com sucesso');
+        await storeData('visitas', []);
+        setVisitasCount(0);
+      } catch (error) {
+        Alert.alert('Success', 'Erro ao enviar visitas');
+        console.error('Error sending data:', error);
+      }
+    }
   }
 
-  function fetchData() {
-    console.log("FETCHING DATA!");
-    getApVisPessoa();
-    const dataToSend = {
-      observacao: "Observation text",
-      id_endereco: 1,
-      matricula_policial: "123456",
-      id_apenado: 2,
-      data_visita: "2024-06-13"
-    };
+  async function fetchData()  {
+    let storedData = await getStoredData('dados');
+    if (storedData) {
+      setDados(storedData);
+    }    
+    
+    await syncVisitas();
 
-    // First, get the data from the server
-    axios.get('http://192.168.202.29:5000/api/syncdata')
-      .then(response => {
-        // Handle success
+    api.get('/api/syncdata').then(async response => {
+        setConectado(true)
+        setDados(response.data);        
+        storeData('dados', response.data);       
         console.log(response.data);
-        Alert.alert('Success', 'Data synchronized successfully');
-        // Now send data to the server
-        axios.post('http://192.168.202.29:5000/api/sync_visits', dataToSend)
-          .then(postResponse => {
-            console.log('Data sent successfully:', postResponse.data);
-            Alert.alert('Success', 'Data sent successfully');
-          })
-          .catch(postError => {
-            console.error('Error sending data:', postError);
-            Alert.alert('Error', 'Failed to send data');
-          });
+        Alert.alert('Success', 'Dados recebidos com sucesso');
       })
       .catch(error => {
-        // Handle error
+        setConectado(false)
         console.error('Error fetching data:', error);
-        Alert.alert('Error', 'Failed to fetch data');
+        Alert.alert('Error', 'Erro ao buscar dados');
       });
   }
 
@@ -251,67 +243,109 @@ export default function Map() {
   useEffect(() => {
     clearLocationAccess();
     watchPosition();
+    fetchData();
   }, []);
   
-  useEffect(() => {
-    getApVisPessoa();
-  }, []);
 
-  function handleSubmitVisita(id: any): void {
-    api.post(`/registro-visita/${id}`, { observacao })
-      .then(response => {
-        // handle success
-        console.log(response.data);
-      })
-      .catch(error => {
-        // handle error
-        console.log(error);
-      });
+  async function handleSubmitVisita(): void {
+    try {
+      // Get the existing visitas from storage
+      const storedVisitas = await AsyncStorage.getItem('visitas');
+      let visitas = storedVisitas ? JSON.parse(storedVisitas) : [];
+
+      // Create a new visita object
+      const newVisita = {
+        observacao,
+        id_endereco: selectedPerson.id_endereco,        
+        id_apenado: selectedPerson.id_apenado,           
+        id_altpenal: selectedPerson.id_altpenal,     
+        matricula_usuario: usuario.matricula,
+        estava_em_casa: estavaEmCasa,
+      };
+
+      // Add the new visita to the array
+      visitas.push(newVisita);
+
+      // Store the updated visitas array back to storage
+      await AsyncStorage.setItem('visitas', JSON.stringify(visitas));
+
+      // Log the updated visitas array
+      console.log('Updated visitas:', visitas);
+      setVisitasCount(visitas.length);
+
+      setVisitaVisible(false)
+      setModalVisible(false)
+      setObservacao('');
+      setEstavaEmCasa(true);
+    } catch (error) {
+      console.log('Error:', error);
+    }
   }
 
   const navigation = useNavigation();
     const handlePress = () => {
+      api.get('/logout').then(responsse => {
+        console.error('succesful logout:');
+      }).catch(error => {
+        console.error('Error logging out:', error);
+      })
+      AsyncStorage.removeItem('matricula');
+      AsyncStorage.removeItem('usuario');
       navigation.goBack();
+
     };
 
   return (
     <View style={styles.page}>
       <TouchableOpacity style={styles.backButton} onPress={handlePress}>
+        <View style={styles.rectangle}>
         <Image
           source={require('../../../../assets/brasao.png')}
           style={styles.mapImage}
         />
-        <View style={styles.rectangle}>
-          <Text style={styles.helloText}>ROBERT</Text>
-          <Text style={styles.welcomeText}>Clique para sair</Text>
+          <View style={{flexDirection: 'column',margin:10, marginRight:20}}>
+            <Text style={styles.helloText}>{usuario.nome}</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={styles.listItemText}>
+              {conectado ? 'Conectado' : 'Não conectado'}
+            </Text>
+            <View
+              style={[
+                styles.listItemIndicator,
+                {backgroundColor: conectado ? '#16FF88' : '#FF0000'}
+              ]}
+            />
+            {visitasCount > 0 ? <Text style={styles.listItemText}>
+              {visitasCount+' visita'+(visitasCount>1?'s':'')+' não sincronizada'+(visitasCount>1?'s':'')+''} 
+            </Text> : null}
+          </View>
+            <Text style={styles.welcomeText}>Clique para sair</Text>
+          </View>
         </View>
       </TouchableOpacity>
       <MapLibreGL.MapView
-        ref={(ref) => { this.mapView = ref; }}
+        ref={ref => {
+          this.mapView = ref;
+        }}
         contentInset={[0, 0, 0, 0]}
         style={styles.map}
         logoEnabled={false}
         styleURL={`https://api.maptiler.com/maps/streets-v2/style.json?key=8BO4NhEjNmKwVKxsVu8b`}
-        attributionPosition={{ bottom: 8, right: 8 }}>
+        attributionPosition={{bottom: 8, right: 8}}>
         <MapLibreGL.Camera
-          ref={(ref) => { this.mapCamera = ref; }}
+          ref={ref => {
+            this.mapCamera = ref;
+          }}
           followUserLocation={centerPoint ? true : false}
           defaultSettings={{
             centerCoordinate: [-49.48226570746353, -28.933063538181845],
             zoomLevel: 10
           }}
         />
-        {endereco.map((p: any) => {
-          const distance =
-            userLocation &&
-            haversineDistance(userLocation, {
-              latitude: p.info_geo.coordinates[1],
-              longitude: p.info_geo.coordinates[0]
-            });
-
+        {altPenal.map((p: any) => {
           return (
             <MapLibreGL.MarkerView
-              key={`${p.id}-${p.id_pessoa}`}
+              key={`${p.id}-${p.cpf}`}
               coordinate={
                 p.info_geo && p.info_geo.coordinates
                   ? p.info_geo.coordinates
@@ -322,7 +356,7 @@ export default function Map() {
                 setSelectedPerson(p);
               }}>
               <TouchableOpacity
-                style={{ maxWidth: '7%' }}
+                style={{maxWidth: 40}}//, borderWidth: 1, borderRadius: 50, borderColor: '#000', backgroundColor: '#FFF', padding: 5, alignItems: 'center', justifyContent: 'center'}}
                 onPress={() => {
                   setModalVisible(true);
                   setSelectedPerson(p);
@@ -339,11 +373,11 @@ export default function Map() {
                       : '#E30613'
                   }
                 />
-                {distance && (
+                {p.distance ? (
                   <Text style={styles.distanceText}>
-                    {distance.toFixed(2)} km
+                    {p.distance.toFixed(2)} km
                   </Text>
-                )}
+                ) : null}
               </TouchableOpacity>
             </MapLibreGL.MarkerView>
           );
@@ -356,7 +390,7 @@ export default function Map() {
         />
       </MapLibreGL.MapView>
 
-      <Animatable.View 
+      <Animatable.View
         style={styles.syncButtonContainer}
         animation={'slideInUp'}
         easing={'ease-in-out'}>
@@ -368,7 +402,7 @@ export default function Map() {
         </TouchableOpacity>
       </Animatable.View>
 
-      <Animatable.View 
+      <Animatable.View
         style={styles.listButtonContainer}
         animation={'slideInUp'}
         easing={'ease-in-out'}>
@@ -401,7 +435,7 @@ export default function Map() {
         )}
       </Animatable.View>
 
-      {modalVisible && (
+      {modalVisible ? (
         <Modal
           animationType="slide"
           transparent={false}
@@ -442,7 +476,7 @@ export default function Map() {
                           : '#E30613'
                     }
                   ]}>
-                  <Text style={{ color: '#26117A' }}>Relevância: </Text>
+                  <Text style={{color: '#26117A'}}>Relevância: </Text>
                   {selectedPerson
                     ? selectedPerson.relevancia === 1
                       ? 'BAIXA'
@@ -452,13 +486,11 @@ export default function Map() {
                     : ''}
                 </Text>
                 <Text style={styles.relevancia}>
-                  <Text style={{ color: '#26117A' }}>Início de Pena: </Text>
-                  {selectedPerson
-                    ? formatarData(selectedPerson.data_ins)
-                    : ''}
+                  <Text style={{color: '#26117A'}}>Início de Pena: </Text>
+                  {selectedPerson ? formatarData(selectedPerson.data_ins) : ''}
                 </Text>
                 <Text style={styles.relevancia}>
-                  <Text style={{ color: '#26117A' }}>Fim de Pena: </Text>
+                  <Text style={{color: '#26117A'}}>Fim de Pena: </Text>
                   {selectedPerson ? formatarData(selectedPerson.data_at) : ''}
                 </Text>
               </View>
@@ -468,35 +500,38 @@ export default function Map() {
               {selectedPerson ? selectedPerson.nome : 'Nome não registrado.'}
             </Text>
             <View style={styles.loc_infos}>
-              <Text>
-                {selectedPerson
-                  ? selectedPerson.logradouro
-                  : 'Logradouro não registrado.'}
+              <Text style={{color: '#26117A'}}>
+                {selectedPerson && selectedPerson.rua
+                  ? selectedPerson.rua
+                  : 'Rua não registrada.'}
                 ,{' '}
               </Text>
-              <Text>
-                {selectedPerson
+              <Text style={{color: '#26117A'}}>
+                {selectedPerson && selectedPerson.numero
                   ? selectedPerson.numero
                   : 'Número não registrado.'}{' '}
                 -{' '}
               </Text>
-              <Text>
-                {selectedPerson
+              <Text style={{color: '#26117A'}}>
+                {selectedPerson && selectedPerson.complemento
                   ? selectedPerson.complemento
-                  : 'Complemento não registrado.'}
+                  : ''}
               </Text>
-              <Text>
+              <Text style={{color: '#26117A'}}>
                 CEP:{' '}
-                {selectedPerson ? selectedPerson.cep : 'CEP não registrado.'},{' '}
+                {selectedPerson && selectedPerson.cep
+                  ? selectedPerson.cep
+                  : 'CEP não registrado.'}
+                ,{' '}
               </Text>
-              <Text>
-                {selectedPerson
+              <Text style={{color: '#26117A'}}>
+                {selectedPerson && selectedPerson.municipio
                   ? selectedPerson.municipio
                   : 'Município não registrado.'}{' '}
                 -{' '}
               </Text>
-              <Text>
-                {selectedPerson
+              <Text style={{color: '#26117A'}}>
+                {selectedPerson && selectedPerson.estado
                   ? selectedPerson.estado
                   : 'Estado não registrado.'}
               </Text>
@@ -512,8 +547,9 @@ export default function Map() {
               Crimes
             </Text>
             <Text style={styles.crimes}>
-              {selectedPerson
-                ? selectedPerson.crimes.map(crime => crime).join(', ')
+              {selectedPerson && selectedPerson.crimes && selectedPerson.crimes.length>0 && selectedPerson.crimes?
+                selectedPerson.crimes?.map(crime => crime.descricao)
+                    .join(', ')
                 : 'Nenhum crime registrado.'}
             </Text>
             <Text
@@ -530,6 +566,22 @@ export default function Map() {
                 ? selectedPerson.medida_imposta
                 : 'Nenhuma medida registrada.'}
             </Text>
+            <Text
+              style={{
+                color: '#73BA96',
+                fontSize: 14,
+                fontWeight: 700,
+                marginTop: 10
+              }}>
+              Visitas
+            </Text>
+            <Text style={styles.visitas}>
+              {selectedPerson && selectedPerson.visitas && selectedPerson.visitas.length>0 && selectedPerson.visitas?
+                    selectedPerson.visitas?.sort((a, b) => b.id - a.id)
+                    .map(visita => 'ID: '+visita.id+' - Usuario: '+visita.matricula_usuario+' - Em casa: '+(visita.estava_em_casa?"Sim":"Não")+' - Data: '+formatarData(visita.data_visita) + ' - Observação: ' + visita.observacao    )          
+                    .join('\n')
+                : 'Nenhuma visita registrada.'}
+            </Text>
 
             <TouchableOpacity
               activeOpacity={0.9}
@@ -537,86 +589,80 @@ export default function Map() {
               onPress={() => {
                 setVisitaVisible(true);
               }}>
-              <Text style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>
+              <Text style={{fontSize: 18, fontWeight: 700, color: '#fff'}}>
                 Registrar Visita
               </Text>
             </TouchableOpacity>
           </View>
         </Modal>
-      )}
+      ) : null}
 
-      {visitaVisible && (
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={true}
-          onRequestClose={() => setVisitaVisible(false)}>
-          <View style={styles.condenado}>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={styles.visitaBack}
-              onPress={() => {
-                setVisitaVisible(false);
-              }}>
-              <FontAwesomeIcon icon={faArrowLeft} color="#26117A" size={20} />
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={visitaVisible}
+        onRequestClose={() => setVisitaVisible(false)}>
+        <View style={styles.condenado}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            style={styles.visitaBack}
+            onPress={() => {
+              setVisitaVisible(false);
+            }}>
+            <FontAwesomeIcon icon={faArrowLeft} color="#26117A" size={20} />
+          </TouchableOpacity>
+          <Text style={styles.pageTitle}>Cadastro de Visita</Text>
+
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              alignSelf: 'center',
+              marginVertical: 12,
+              color: '#26117A'
+            }}>
+            O Indivíduo estava em casa?
+          </Text>
+
+          <View style={styles.visitaCheck}>
+            <TouchableOpacity style={{...styles.visitaCheckSim,...(estavaEmCasa?styles.visitaCheckSelecionado:{})}}  activeOpacity={0.9} onPress={() => setEstavaEmCasa(true)}>
+              <Text style={styles.btnText} >SIM</Text>
             </TouchableOpacity>
-            <Text style={styles.pageTitle}>Cadastro de Visita</Text>
-
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: 700,
-                alignSelf: 'center',
-                marginVertical: 12,
-                color: '#26117A'
-              }}>
-              O Indivíduo estava em casa?
-            </Text>
-
-            <View style={styles.visitaCheck}>
-              <TouchableOpacity
-                style={styles.visitaCheckSim}
-                activeOpacity={0.9}>
-                <Text style={styles.btnText}>SIM</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.visitaCheckNao}
-                activeOpacity={0.9}>
-                <Text style={styles.btnText}>NÃO</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text
-                style={{
-                  color: 'red',
-                  fontSize: 16,
-                  marginLeft: 30,
-                  marginTop: 10,
-                  marginBottom: -15
-                }}>
-                *<Text style={{ color: '#7D7D7D' }}>Observação:</Text>
-              </Text>
-              <TextInput
-                multiline
-                style={styles.textInput}
-                onChangeText={setObservacao}
-                value={observacao}
-              />
-            </View>
-
-            <TouchableOpacity style={styles.sendBtn} activeOpacity={0.9}>
-              <Text
-                style={styles.btnText}
-                onPress={() => handleSubmitVisita(selectedPerson?.id)}>
-                Enviar
-              </Text>
+            <TouchableOpacity style={{...styles.visitaCheckNao,...(!estavaEmCasa?styles.visitaCheckSelecionado:{})}} activeOpacity={0.9} onPress={() => setEstavaEmCasa(false)}>
+              <Text style={styles.btnText} >NÃO</Text>
             </TouchableOpacity>
           </View>
-        </Modal>
-      )}
 
-      {listModalVisible && (
+          <View style={styles.inputContainer}>
+            <Text
+              style={{
+                color: 'red',
+                fontSize: 16,
+                marginLeft: 30,
+                marginTop: 10,
+                marginBottom: -15
+              }}>
+              *
+            </Text>
+            <Text style={{color: '#7D7D7D'}}>Observação:</Text>
+
+            <TextInput
+              multiline
+              style={styles.textInput}
+              onChangeText={setObservacao}
+              value={observacao}
+            />
+          </View>
+
+          <TouchableOpacity style={styles.sendBtn} activeOpacity={0.9} onPress={() => handleSubmitVisita()}>
+            <Text style={styles.btnText} >
+              Enviar
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {listModalVisible ? (
         <Modal
           animationType="slide"
           transparent={false}
@@ -633,54 +679,60 @@ export default function Map() {
             </TouchableOpacity>
             <Text style={styles.pageTitle}>Lista de Apenados</Text>
             <ScrollView style={styles.listContainer}>
-              {endereco.map((p: any) => {
-                const distance =
-                  userLocation &&
-                  haversineDistance(userLocation, {
-                    latitude: p.info_geo.coordinates[1],
-                    longitude: p.info_geo.coordinates[0]
-                  });
+              {altPenal
+                .sort((a, b) => a.distance - b.distance)
+                .map((p: any) => {
+                  const relevanciaColor =
+                    p.relevancia === 1
+                      ? '#FFDE14'
+                      : p.relevancia === 2
+                      ? '#FF8800'
+                      : '#E30613';
 
-                const relevanciaColor = 
-                  p.relevancia === 1
-                    ? '#FFDE14'
-                    : p.relevancia === 2
-                    ? '#FF8800'
-                    : '#E30613';
-
-                return (
-                  <View key={p.id} style={styles.listItem}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  return (
+                    <View key={p.id} style={styles.listItem}>
                       <View
-                        style={[
-                          styles.listItemIndicator,
-                          { backgroundColor: relevanciaColor }
-                        ]}
-                      />
-                      <Text style={styles.listItemText}>{p.nome}</Text>
+                        style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <View
+                          style={[
+                            styles.listItemIndicator,
+                            {backgroundColor: relevanciaColor}
+                          ]}
+                        />
+                        <View>
+                          <Text style={styles.listItemText}>{p.nome}</Text>
+                          <Text style={styles.listItemSubText}>{p.last_visit?'Ultima Visita: '+formatarData(p.last_visit):'Nunca visitado'}</Text>
+                        </View>
+                      </View>
+                      <View
+                        style={{flexDirection: 'row', alignItems: 'center'}}>
+                        {p.distance ? (
+                          <Text style={styles.listItemDistance}>
+                            {p.distance.toFixed(2)} km
+                          </Text>
+                        ) : null}
+                        <TouchableOpacity
+                          style={styles.listItemButton}
+                          onPress={() => {
+                            setSelectedPerson(p);
+                            setModalVisible(true);
+                            setListModalVisible(false);
+                          }}
+                          activeOpacity={0.8}>
+                          <FontAwesomeIcon
+                            icon={faLocationArrow}
+                            color="#000"
+                            size={22}
+                          />
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                    {distance && (
-                      <Text style={styles.listItemDistance}>
-                        {distance.toFixed(2)} km
-                      </Text>
-                    )}
-                    <TouchableOpacity
-                      style={styles.listItemButton}
-                      onPress={() => {
-                        setSelectedPerson(p);
-                        setModalVisible(true);
-                        setListModalVisible(false);
-                      }}
-                      activeOpacity={0.8}>
-                      <FontAwesomeIcon icon={faLocationArrow} color="#000" size={22} />
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
+                  );
+                })}
             </ScrollView>
           </View>
         </Modal>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -693,13 +745,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF'
   },
   mapImage: {
-    position: 'absolute',
     zIndex: 99,
     resizeMode: 'contain',
-    maxWidth: '30%',
-    maxHeight: '30%',
-    top: '4%',
-    start: '5%'
+    width: 50,
+    height: 50,
+    margin:10
   },
   map: {
     flex: 1,
@@ -770,14 +820,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     paddingVertical: 7,
     paddingLeft: 20,
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    color: '#26117A'
   },
   datas: {
     lineHeight: 2
   },
   loc_infos: {
     justifyContent: 'flex-start',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    color: '#26117A'
   },
   condNome: {
     marginTop: 24,
@@ -790,11 +842,11 @@ const styles = StyleSheet.create({
   crimes: {
     flex: 1,
     paddingHorizontal: 10,
-    paddingVertical: 10,
     borderWidth: 1,
     borderRadius: 8,
     borderColor: '#73BA96',
-    minWidth: '100%'
+    minWidth: '100%',
+    color:'#000'
   },
   medida: {
     flex: 1,
@@ -806,7 +858,21 @@ const styles = StyleSheet.create({
     minWidth: '100%',
     alignSelf: 'flex-start',
     flexWrap: 'wrap',
-    marginBottom: '15%'
+    color:'#000'
+  },
+  visitas: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: '#73BA96',
+    minWidth: '100%',
+    height: 300,
+    alignSelf: 'flex-start',
+    marginBottom: '15%',
+    lineHeight: 20,
+    overflow: 'scroll',
+    color:'#000'
   },
   condButton: {
     position: 'absolute',
@@ -838,6 +904,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     marginBottom: '10%'
   },
+  visitaCheckSelecionado: {
+    borderColor:'#26117A',
+    borderWidth: 2
+  },
   visitaCheckSim: {
     padding: 10,
     backgroundColor: '#73BA96',
@@ -846,7 +916,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     shadowOpacity: 0.8,
     shadowRadius: 4,
-    elevation: 10
+    elevation: 10,
   },
   visitaCheckNao: {
     padding: 10,
@@ -903,20 +973,28 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    color: '#000'
   },
   listItemText: {
-    fontSize: 16,
+    color: '#000',
+    fontSize: 14,
     fontWeight: 'bold',
+  },
+  listItemSubText: {
+    color: '#000',
+    fontSize: 10,
   },
   listItemIndicator: {
     width: 10,
     height: 10,
     borderRadius: 5,
     marginHorizontal: 10,
+    textAlign: 'right'
   },
   listItemDistance: {
+    color: '#000',
     fontSize: 14,
-    marginLeft: 10,
+    textAlign: 'right',
   },
   listItemButton: {
     backgroundColor: '#FFF',
@@ -936,8 +1014,8 @@ const styles = StyleSheet.create({
   distanceText: {
     fontSize: 12,
     color: '#000',
-    textAlign: 'center',
-    marginTop: 5,
+    textAlign: 'left',
+    marginTop: 0,
   },
   backButton: {
     position: 'absolute',
@@ -947,14 +1025,16 @@ const styles = StyleSheet.create({
     start: '2%',
   },
   rectangle: {
+    alignItems:'center',
+    flexDirection: 'row',
     zIndex: 2,
     resizeMode: 'contain',
     // maxWidth: '30%',
     maxHeight: '95%',
     top: '4%',
-    start: '5%',
+    start: '0%',
     backgroundColor: '#FFFFFFE0',
-    paddingRight: 5,
+    paddingRight: 0,
     paddingVertical: 10,
     borderRadius: 26,
     shadowColor: '#000',
@@ -965,7 +1045,7 @@ const styles = StyleSheet.create({
   },
   helloText: {
     fontSize: 14,
-    marginLeft: "30%",
+    // marginLeft: "30%",
     color: "#000",
     fontWeight: 'bold',
     textAlign: "left",
@@ -973,7 +1053,31 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 12,
     color: "#000",
-    marginLeft: "30%",
+    // marginLeft: "30%",
     textAlign: "left",
   },
 });
+
+function storeData(key: string, data: any) {
+  AsyncStorage.setItem(key, JSON.stringify(data))
+    .then(() => {
+      console.log('Data stored successfully');
+    })
+    .catch((error) => {
+      console.log('Error storing data:', error);
+    });
+}
+
+async function getStoredData(key: string) {
+  try {
+    const data = await AsyncStorage.getItem(key);
+    console.log('Data fetched successfully:')//, data);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.log('Error fetching data:', error);
+    return null;
+  }
+}

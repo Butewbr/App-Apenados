@@ -1,15 +1,17 @@
+import json
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from flask_bcrypt import generate_password_hash, check_password_hash
 import logging
 import psycopg2
 import datetime
+from flask_cors import CORS
 
 
 app = Flask(__name__)
 
 app.secret_key = 'your_secret_key'  # Change this to a random secret key
-
+CORS(app, supports_credentials=True)
 logging.basicConfig(level=logging.DEBUG)
 
 login_manager = LoginManager()
@@ -17,10 +19,10 @@ login_manager.init_app(app)
 
 def get_db():
     conn = psycopg2.connect(
-        dbname="appApenadosDB",
+        dbname="app-apenados",
         user="postgres",
-        password="123",
-        host="database",
+        password="admin",
+        host="localhost",
         port="5432"
     )
     return conn
@@ -37,7 +39,7 @@ def index():
 def user_loader(matricula):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT matricula FROM Policial WHERE matricula = %s", (matricula,))
+    cur.execute("SELECT matricula FROM Usuario WHERE matricula = %s", (matricula,))
     user_id = cur.fetchone()
     if user_id is None:
         return
@@ -53,16 +55,20 @@ def login():
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT matricula, password_hash FROM Policial WHERE matricula = %s", (matricula,))
+        cur.execute("SELECT matricula,cpf_pessoa,password_hash,nome FROM Usuario WHERE matricula = %s", (matricula,))
         result = cur.fetchone()
 
         if result is not None:
-            db_matricula, db_password_hash = result
-            if db_matricula == matricula and check_password_hash(db_password_hash, password):
+            db_matricula,cpf_pessoa,password_hash,nome = result
+            if db_matricula == matricula and check_password_hash(password_hash, password):
                 user = User()
                 user.id = matricula
                 login_user(user)
-                return redirect(url_for('display_data'))
+                return jsonify({'message':'Login successfull', 'usuario':{'nome': nome, 'matricula': db_matricula, 'cpf': cpf_pessoa}})
+
+        # Invalid credentials
+        logout_user()
+        return jsonify({'error': 'Invalid credentials'}), 401
 
     return render_template('login.html')
 
@@ -75,38 +81,36 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        password = request.form['password']
-        matricula = request.form['matricula']
-        telefone = request.form['telefone']
-        cpf = request.form['cpf']
-        nome = request.form['nome']
+        password = request.json['senha']
+        matricula = request.json['matricula']
+        telefone = request.json['telefone']
+        cpf = request.json['cpf']
+        nome = request.json['nome']
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT matricula FROM Policial WHERE matricula = %s", (matricula,))
+        cur.execute("SELECT matricula FROM Usuario WHERE matricula = %s", (matricula,))
         user_exists = cur.fetchone()
-        cur.execute("SELECT cpf FROM Pessoa WHERE cpf = %s", (cpf,))
-        pessoa_exists = cur.fetchone()
+        hashed_password = generate_password_hash(password).decode('utf-8')
 
-        if pessoa_exists is None:
-            hashed_password = generate_password_hash(password).decode('utf-8')
-            cur.execute("""
-                INSERT INTO Pessoa (cpf, nome)
-                VALUES (%s, %s)
-            """, (cpf, nome))
         if user_exists is None:
             cur.execute("""
-                INSERT INTO Policial (matricula, password_hash, telefone, cpf_pessoa)
+                INSERT INTO Usuario (matricula, password_hash, cpf_pessoa, nome)
                 VALUES (%s, %s, %s, %s)
-            """, (matricula, hashed_password, telefone, cpf))
+            """, (matricula, hashed_password, cpf, nome))
             conn.commit()
 
-            user = User()
-            user.id = matricula
-            login_user(user)
-            return redirect(url_for('display_data'))
+            return jsonify({'message':'Registrado com sucesso', 'usuario':{'nome': nome, 'matricula': matricula, 'cpf': cpf}})
+        else:
+            cur.execute("""
+                UPDATE Usuario
+                SET password_hash = %s, telefone = %s, cpf_pessoa = %s, nome = %s
+                WHERE matricula = %s
+            """, (hashed_password, telefone, cpf, nome, matricula))
+            conn.commit()
+            return jsonify({'message':'Atualizado com sucesso', 'usuario':{'nome': nome, 'matricula': matricula, 'cpf': cpf}})
 
-    return render_template('register.html')
+    return jsonify({'error': 'Erro'}), 401
 
 @app.route('/api/policiais', methods=['GET'])
 @login_required
@@ -114,7 +118,7 @@ def get_policiais_api():
     conn = get_db()
     cur = conn.cursor()
     logging.debug('Buscando policiais registrados no banco de dados...')
-    cur.execute("SELECT * FROM Policial")
+    cur.execute("SELECT * FROM Usuario")
     policiais = cur.fetchall()
     policiais_list = [dict((cur.description[i][0], value) \
                for i, value in enumerate(row)) for row in policiais]
@@ -123,6 +127,7 @@ def get_policiais_api():
     return jsonify(policiais_list)
 
 @app.route('/api/syncdata', methods=['GET'])
+@login_required
 def get_all_data_api():
     conn = get_db()
     cur = conn.cursor()
@@ -130,16 +135,16 @@ def get_all_data_api():
     logging.debug('Buscando dados novos no banco...')
     # Execute all queries in one go
     queries = [
-        "SELECT * FROM Pessoa",
-        "SELECT * FROM Policial",
-        "SELECT * FROM Endereco",
-        "SELECT * FROM Crime",
-        "SELECT * FROM ArtigoPenal",
+        "SELECT * FROM Apenado left join AltPenal on Apenado.id = AltPenal.id_apenado ",
+        "SELECT * FROM Endereco join AltPenal on Endereco.id = AltPenal.id_endereco join Apenado on AltPenal.id_apenado = Apenado.id ",
+        "SELECT * FROM Usuario",
+        "SELECT * FROM Crime join AltPenal on Crime.id_altpenal = AltPenal.id",
+        "SELECT AltPenal.id as id_altpenal, AltPenal.*, Apenado.*,Endereco.*, (select data_visita from visita where AltPenal.id=visita.id_altpenal order by id desc limit 1) as last_visit FROM AltPenal left join Apenado on AltPenal.id_apenado = Apenado.id left join Endereco on AltPenal.id_endereco = Endereco.id ",
         "SELECT * FROM Visita"
     ]
     
     all_data = {}
-    for table, query in zip(["Pessoa", "Policial", "Endereco", "Crime", "ArtigoPenal", "Visita"], queries):
+    for table, query in zip(["Apenado", "Endereco", "Usuario", "Crime", "AltPenal", "Visita"], queries):
         cur.execute(query)
         data = cur.fetchall()
         data_list = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in data]
@@ -179,14 +184,15 @@ def sync_visits():
         conn = get_db()
         cur = conn.cursor()
         
-        cur.execute("""
-            INSERT INTO Visita (observacao, id_endereco, matricula_policial, id_apenado, data_visita)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (data['observacao'], data['id_endereco'], data['matricula_policial'], data['id_apenado'], data['data_visita']))
+        for visit in data:
+            cur.execute("""
+                INSERT INTO Visita (observacao, id_endereco, matricula_usuario, id_apenado, id_altpenal, estava_em_casa)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (visit['observacao'], visit['id_endereco'], visit['matricula_usuario'], visit['id_apenado'], visit['id_altpenal'], visit['estava_em_casa']))
         
         conn.commit()
 
-        return redirect(url_for('display_data'))
+        return get_all_data_api()
     else:
         return redirect(url_for('/'))
 
@@ -228,13 +234,6 @@ def update_data():
             WHERE id = %s
         """, (new_cpf, new_relevancia, id))
 
-        # Update Pessoa table
-        cur.execute("""
-            UPDATE Pessoa
-            SET nome = %s
-            WHERE cpf = %s
-        """, (new_nome, new_cpf))
-
         # Update Endereco table
         cur.execute("""
             UPDATE Endereco
@@ -258,57 +257,98 @@ def update_data():
 @login_required
 def add_apenado():
     if request.method == 'POST':
-        nome = request.form['nome']
-        cpf = request.form['cpf']
-        relevancia = request.form['relevancia']
+        id_apenado = request.json.get('apenado', {}).get('id_apenado', None)
+        nome = request.json.get('apenado', {}).get('nome', None)
+        cpf = request.json.get('apenado', {}).get('cpf', None)
+        relevancia = request.json.get('apenado', {}).get('relevancia', None)
+        telefone = request.json.get('apenado', {}).get('telefone', None)
         
         # Collect individual address components
-        rua = request.form['rua']
-        numero = request.form['numero']
-        complemento = request.form['complemento']
-        cep = request.form['cep']
-        estado = request.form['estado']
-        municipio = request.form['municipio']
+        id_endereco = request.json.get('endereco', {}).get('id_endereco', None)
+        rua = request.json.get('endereco', {}).get('rua', None)
+        numero = request.json.get('endereco', {}).get('numero', None) or None
+        complemento = request.json.get('endereco', {}).get('complemento', None)
+        cep = request.json.get('endereco', {}).get('cep', None) or None
+        estado = request.json.get('endereco', {}).get('estado', None)
+        municipio = request.json.get('endereco', {}).get('municipio', None)
+        latitude = request.json.get('endereco', {}).get('latitude', None)
+        longitude = request.json.get('endereco', {}).get('longitude', None)
+
+        
+        id_altpenal = request.json.get('altPenal', {}).get('id_altpenal', None)
+        vara = request.json.get('altPenal', {}).get('vara', None)
+        numeroAutos = request.json.get('altPenal', {}).get('numeroAutos', None)
+        dataInicio = request.json.get('altPenal', {}).get('dataInicio', None)
+        dataFim = request.json.get('altPenal', {}).get('dataFim', None)
+        medidaImposta = request.json.get('altPenal', {}).get('medidaImposta', None)
         
         # Collect crime details
-        crime_descricao = request.form['crime_descricao']
-        crime_data = request.form['crime_data']
-        # artigo_penal_id = request.form['artigo_penal_id']
+        crimes = request.json.get('crimes', None)
 
         conn = get_db()
         cur = conn.cursor()
 
-        # Insert into Pessoa table if not exists
-        cur.execute("""
-            INSERT INTO Pessoa (cpf, nome)
-            SELECT %s, %s
-            WHERE NOT EXISTS (SELECT 1 FROM Pessoa WHERE cpf = %s)
-        """, (cpf, nome, cpf))
-
         # Insert into Endereco table
-        cur.execute("""
-            INSERT INTO Endereco (rua, numero, complemento, cep, estado, municipio)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING id
-        """, (rua, numero, complemento, cep, estado, municipio))
+        if id_endereco is not None:
+            cur.execute("""
+                UPDATE Endereco
+                SET rua = %s, numero = %s, complemento = %s, cep = %s, estado = %s, municipio = %s, info_geo = %s
+                WHERE id = %s
+            """, (rua, numero, complemento, cep, estado, municipio, json.dumps({"coordinates": [longitude,latitude]}), id_endereco))
+        else:
+            cur.execute("""
+                INSERT INTO Endereco (rua, numero, complemento, cep, estado, municipio, info_geo)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (rua, numero, complemento, cep, estado, municipio, json.dumps({"coordinates": [longitude,latitude]})))
         
-        endereco_id = cur.fetchone()[0]
+            id_endereco = cur.fetchone()[0]
 
-        # Insert into Crime table
-        cur.execute("""
-            INSERT INTO Crime (data_ocorrido, descricao)
-            VALUES (%s, %s)
-            RETURNING id
-        """, (crime_data, crime_descricao))
-        
-        crime_id = cur.fetchone()[0]
 
         # Insert into Apenado table
-        cur.execute("""
-            INSERT INTO Apenado (cpf, id_endereco, id_crime, Relevancia)
-            VALUES (%s, %s, %s, %s)
-        """, (cpf, endereco_id, crime_id, relevancia))
+        if id_apenado is not None:
+            cur.execute("""
+                UPDATE Apenado
+                SET nome = %s, cpf = %s, telefone = %s, relevancia = %s
+                WHERE id = %s
+            """, (nome, cpf, telefone, relevancia, id_apenado))
+        else:
+            cur.execute("""
+                INSERT INTO Apenado (nome, cpf, telefone, relevancia)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+            """, (nome, cpf, telefone, relevancia))
+            id_apenado = cur.fetchone()[0]
+
+        # Insert into AltPenal table
+        if id_altpenal is not None:
+            cur.execute("""
+                UPDATE AltPenal
+                SET id_apenado = %s, id_endereco = %s, vara = %s, num_autos = %s, data_inicio = %s, data_fim = %s, medida_imposta = %s
+                WHERE id = %s
+            """, (id_apenado, id_endereco, vara, numeroAutos, dataInicio, dataFim, medidaImposta, id_altpenal))
+        else:                   
+            cur.execute("""
+                INSERT INTO AltPenal (id_apenado, id_endereco, vara, num_autos, data_inicio, data_fim, medida_imposta)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (id_apenado, id_endereco, vara, numeroAutos, dataInicio, dataFim, medidaImposta))
+            id_altpenal = cur.fetchone()[0]
         
+        for crime in crimes:
+            if crime['descricao']:
+                if crime.get('id', None) is not None:
+                    cur.execute("""
+                        UPDATE Crime
+                        SET data_ocorrido = %s, descricao = %s
+                        WHERE id = %s
+                    """, (crime['dataOcorrido'], crime['descricao'], crime['id']))
+                else:
+                    cur.execute("""
+                    INSERT INTO Crime (data_ocorrido, descricao, id_altpenal)
+                    VALUES (%s,%s,%s)
+                    """, (crime['dataOcorrido'], crime['descricao'], id_altpenal))
+        # artigo_penal_id = req
         conn.commit()
         cur.close()
 
@@ -321,17 +361,77 @@ def get_apenados_api():
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        SELECT Apenado.*, Pessoa.nome, Endereco.*, Crime.*, ArtigoPenal.descricao as artigo_penal_descricao
+        SELECT Apenado.*, Endereco.*, AltPenal.*, AltPenal.id as id_altpenal, Apenado.id as id
         FROM Apenado
-        INNER JOIN Pessoa ON Apenado.cpf = Pessoa.cpf
-        LEFT JOIN Endereco ON Apenado.id_endereco = Endereco.id
-        LEFT JOIN Crime ON Apenado.id_crime = Crime.id
-        LEFT JOIN ArtigoPenal ON Crime.id_artigo_penal = ArtigoPenal.id
+        LEFT JOIN AltPenal ON Apenado.id = AltPenal.id_apenado
+        LEFT JOIN Endereco ON AltPenal.id_endereco = Endereco.id
     """)
     apenados = cur.fetchall()
-    apenados_list = [dict((cur.description[i][0], value) \
-               for i, value in enumerate(row)) for row in apenados]
+    apenados_list = []
+    for row in apenados:
+        apenado_dict = dict((cur.description[i][0], value) for i, value in enumerate(row))
+        apenado_dict['crimes'] = []
+        apenados_list.append(apenado_dict)
+        
+    # Fetch crimes for each apenado
+    for apenado in apenados_list:
+        cur.execute("""
+            SELECT Crime.*
+            FROM Crime
+            WHERE Crime.id_altpenal = %s
+        """, (apenado['id_altpenal'],))
+        crimes = cur.fetchall()
+        apenado['crimes'] = [dict((cur.description[i][0], value) for i, value in enumerate(crime)) for crime in crimes]
+        
+    # Fetch visitas for each apenado
+    for apenado in apenados_list:
+        cur.execute("""
+            SELECT Visita.*
+            FROM Visita
+            WHERE Visita.id_altpenal = %s
+        """, (apenado['id_altpenal'],))
+        visitas = cur.fetchall()
+        apenado['visitas'] = [dict((cur.description[i][0], value) for i, value in enumerate(visita)) for visita in visitas]
+        
     return jsonify(apenados_list)
+
+@app.route('/api/apenado/<int:apenado_id>', methods=['GET'])
+@login_required
+def get_apenado_api(apenado_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT Apenado.*, Endereco.*, AltPenal.*, AltPenal.id as id_altpenal, Apenado.id as id
+        FROM Apenado
+        LEFT JOIN AltPenal ON Apenado.id = AltPenal.id_apenado
+        LEFT JOIN Endereco ON AltPenal.id_endereco = Endereco.id
+        WHERE Apenado.id = %s
+    """, (apenado_id,))
+    apenado = cur.fetchone()
+    if apenado is None:
+        return jsonify({'error': 'Apenado not found'})
+    
+    apenado_dict = dict((cur.description[i][0], value) for i, value in enumerate(apenado))
+    apenado_dict['crimes'] = []
+    
+    cur.execute("""
+        SELECT Crime.*
+        FROM Crime
+        WHERE Crime.id_altpenal = %s
+    """, (apenado_dict['id_altpenal'],))
+    crimes = cur.fetchall()
+    apenado_dict['crimes'] = [dict((cur.description[i][0], value) for i, value in enumerate(crime)) for crime in crimes]
+
+    # Fetch visitas for each apenado
+    cur.execute("""
+        SELECT Visita.*
+        FROM Visita
+        WHERE Visita.id_altpenal = %s
+    """, (apenado_dict['id_altpenal'],))
+    visitas = cur.fetchall()
+    apenado_dict['visitas'] = [dict((cur.description[i][0], value) for i, value in enumerate(visita)) for visita in visitas]
+    
+    return jsonify(apenado_dict)
 
 @app.route('/gerenciamento')
 @login_required
@@ -340,13 +440,11 @@ def display_data():
     cur = conn.cursor()
     
     cur.execute("""
-        SELECT Apenado.*, Pessoa.nome,
-               Endereco.rua, Endereco.numero, Endereco.complemento, Endereco.cep, Endereco.estado, Endereco.municipio,
-               Crime.descricao AS crime_descricao, Crime.data_ocorrido
+        SELECT Apenado.*, 
+               Endereco.rua, Endereco.numero, Endereco.complemento, Endereco.cep, Endereco.estado, Endereco.municipio
         FROM Apenado
-        INNER JOIN Pessoa ON Apenado.cpf = Pessoa.cpf
-        LEFT JOIN Endereco ON Apenado.id_endereco = Endereco.id
-        LEFT JOIN Crime ON Apenado.id_crime = Crime.id
+        LEFT JOIN Endereco ON Endereco.id_apenado = Apenado.id
+        LEFT JOIN AltPenal ON Apenado.id = AltPenal.id_apenado
     """)
     
     apenados = cur.fetchall()
