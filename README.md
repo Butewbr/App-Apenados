@@ -136,8 +136,6 @@ Este diagrama de caso de uso fornece um resumo visual de alto nível das funcion
 
 <small>Figura 8: Tela de Login no Aplicativo Mobile.</small>
 
-##	Diagrama de Classe
-
 ## Diagrama de Classe
 
 O diagrama de classe é uma representação da estrutura e das relações das classes que servem de modelo para os objetos no sistema. Ele mostra as diferentes classes, seus atributos, métodos e as interações entre elas.
