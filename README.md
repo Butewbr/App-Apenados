@@ -239,13 +239,16 @@ Após a instalação, basta apertar em `ctrl + shift + d`, alterar o start debug
 
 ### Conclusão
 
-Ao longo do desenvolvimento deste projeto, adquirimos um conhecimento valioso sobre diversas tecnologias que contribuíram significativamente para nossa experiência. Utilizamos Flask para o backend, ReactJS para o aplicativo móvel, GitHub para a colaboração no desenvolvimento do projeto, e Scrum para o gerenciamento de projetos. A integração dessas tecnologias nos permitiu criar uma solução eficiente e segura.
+Ao longo do desenvolvimento deste projeto, adquirimos um conhecimento valioso sobre diversas tecnologias que contribuíram significativamente para nossa experiência. Utilizamos Flask para o backend, ReactJS para o aplicativo móvel, GitHub para a colaboração no desenvolvimento do projeto, e Scrum para o gerenciamento de projetos. Assim, a integração dessas tecnologias nos permitiu criar uma solução eficiente e segura.
 
-Compreendemos profundamente a importância de desenvolver uma plataforma que não só atenda às necessidades operacionais dos policiais da cidade de Araranguá, mas que também garanta a segurança e a integridade dos dados. A utilização de PostgreSQL como banco de dados e Node.js para a criação de APIs robustas foi crucial para o sucesso do projeto. Além disso, a implementação de tecnologias como MapLibre para mapeamento e Material UI junto com Styled Components para estilização nos permitiu criar uma interface de usuário moderna e intuitiva.
+Compreendemos profundamente a importância de desenvolver uma plataforma que não só atenda às necessidades operacionais dos policiais da cidade de Araranguá, mas que também garanta a segurança e a integridade dos dados. Logo, a utilização de PostgreSQL como banco de dados e Node.js para a criação de APIs foi crucial para o sucesso do projeto. Além disso, a implementação de tecnologias como MapLibre para mapeamento e Material UI junto com Styled Components para estilização nos permitiu criar uma interface de usuário moderna e intuitiva.
 
-Por fim, entendemos que o aplicativo ainda pode ser melhorado e expandido para atender a uma variedade de necessidades operacionais. Podemos citar, por exemplo adicionar funcionalidades como 
+Por fim, entendemos que o aplicativo ainda pode ser melhorado e expandido para atender a uma variedade de necessidades operacionais. Podemos citar, por exemplo adicionar funcionalidades como:
 
-### Ainda em andamento
+- Uma tela de listagem de PMs;
+- Notificação ao se aproximar de um Apenado que não foi visitado;
+- Um botão para o PM escolher o raio desejado para buscar os Apenados no mapa;
+- Um alerta do tipo toast para informar que o usuário falhou em algum processo ou que obteve sucesso ao fazer um cadastro.
 
 <hr>
 
